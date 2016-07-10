@@ -1,6 +1,6 @@
 {
   "name": "graphql-sequelize-crud",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Automatically generate queries and mutations from Sequelize models",
   "main": "lib/index.js",
   "directories": {
