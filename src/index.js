@@ -52,7 +52,8 @@ function _createRecord({
   modelType,
   ModelTypes,
   associationsToModel,
-  associationsFromModel
+  associationsFromModel,
+  cache
 }) {
 
   let createMutationName = mutationName(Model, 'create');
@@ -61,7 +62,8 @@ function _createRecord({
     description: `Create ${Model.name} record.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
-        commentToDescription: true
+        commentToDescription: true,
+        cache
       });
       // Fix Relay Global ID
       _.each(Object.keys(Model.rawAttributes), (k) => {
@@ -209,7 +211,8 @@ function _updateRecord({
   modelType,
   ModelTypes,
   associationsToModel,
-  associationsFromModel
+  associationsFromModel,
+  cache
 }) {
 
   let createMutationName = mutationName(Model, 'update');
@@ -218,7 +221,8 @@ function _updateRecord({
     description: `Update ${Model.name} record.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
-        commentToDescription: true
+        commentToDescription: true,
+        cache
       });
       // Fix Relay Global ID
       _.each(Object.keys(Model.rawAttributes), (k) => {
@@ -325,7 +329,8 @@ function _deleteRecord({
   modelType,
   ModelTypes,
   associationsToModel,
-  associationsFromModel
+  associationsFromModel,
+  cache
 }) {
 
   let createMutationName = mutationName(Model, 'delete');
@@ -334,7 +339,8 @@ function _deleteRecord({
     description: `Delete ${Model.name} record.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
-        commentToDescription: true
+        commentToDescription: true,
+        cache
       });
       // Fix Relay Global ID
       _.each(Object.keys(Model.rawAttributes), (k) => {
@@ -444,6 +450,7 @@ function getSchema(sequelize) {
   const mutations = {};
   const associationsToModel = {};
   const associationsFromModel = {};
+  const cache = {};
 
   // Create types map
   const ModelTypes = Object.keys(Models).reduce(function (types, key) {
@@ -478,7 +485,8 @@ function getSchema(sequelize) {
           // Attribute fields
           attributeFields(Model, {
             globalId: true,
-            commentToDescription: true
+            commentToDescription: true,
+            cache
           })
         );
       },
@@ -493,7 +501,8 @@ function getSchema(sequelize) {
       modelType,
       ModelTypes: types,
       associationsToModel,
-      associationsFromModel
+      associationsFromModel,
+      cache
     });
 
     // READ single
@@ -517,7 +526,8 @@ function getSchema(sequelize) {
       modelType,
       ModelTypes: types,
       associationsToModel,
-      associationsFromModel
+      associationsFromModel,
+      cache
     });
 
     // DELETE single
@@ -527,7 +537,8 @@ function getSchema(sequelize) {
       modelType,
       ModelTypes: types,
       associationsToModel,
-      associationsFromModel
+      associationsFromModel,
+      cache
     });
 
     return types;
