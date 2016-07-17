@@ -15,6 +15,10 @@ const sequelize = new Sequelize('database', 'username', 'password', {
   // the storage engine for sqlite
   // - default ':memory:'
   // storage: 'path/to/database.sqlite'
+
+  // disable logging; default: console.log
+  // logging: false
+
 });
 
 const User = sequelize.define('User', {

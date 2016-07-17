@@ -24,6 +24,10 @@ describe('getSchema', function() {
       // the storage engine for sqlite
       // - default ':memory:'
       // storage: 'path/to/database.sqlite'
+
+      // disable logging; default: console.log
+      logging: false
+
     });
 
     User = sequelize.define('User', {
@@ -123,7 +127,7 @@ describe('getSchema', function() {
 
   });
 
-  it('should successfully createUser', function(cb) {
+  it('should successfully createUser, createTodo, createTodoAssignee', function(cb) {
 
     var schema = getSchema(sequelize);
 
@@ -143,12 +147,40 @@ describe('getSchema', function() {
         "clientMutationId": "yo"
       }
     };
-
+    let createTodoVariables = {
+      "input": {
+        "text": "Something",
+        "completed": false,
+        // userId,
+        "clientMutationId": "yo"
+      }
+    };
+    let createTodoAssigneeVariables1 = {
+      "input": {
+        "primary": true,
+        // "UserId": userId,
+        // "TodoId": todoId,
+        "clientMutationId": "yo"
+      }
+    };
+    // let createTodoAssigneeVariables2 = {
+    //   "input": {
+    //     "primary": false,
+    //     "UserId": userId,
+    //     "TodoId": todoId,
+    //     "clientMutationId": "yo"
+    //   }
+    // };
     let userId, todoId;
 
     return graphql(schema, createUserMutation, {}, {}, createUserVariables)
       .then(result => {
-        console.log(JSON.stringify(result, undefined, 4));
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.createUser).to.be.an('object');
+        expect(result.data.createUser.newUser).to.be.an('object');
+        expect(result.data.createUser.newUser.id).to.be.an('string');
 
         userId = result.data.createUser.newUser.id;
 
@@ -161,19 +193,17 @@ describe('getSchema', function() {
             }
           }
         `;
-        let createTodoVariables = {
-          "input": {
-            "text": "Something",
-            "completed": false,
-            userId,
-            "clientMutationId": "yo"
-          }
-        };
+        createTodoVariables.input.userId = userId;
 
         return graphql(schema, createTodoMutation, {}, {}, createTodoVariables);
       })
       .then(result => {
-        console.log(JSON.stringify(result, undefined, 4));
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.createTodo).to.be.an('object');
+        expect(result.data.createTodo.newTodo).to.be.an('object');
+        expect(result.data.createTodo.newTodo.id).to.be.an('string');
 
         todoId = result.data.createTodo.newTodo.id;
 
@@ -186,29 +216,25 @@ describe('getSchema', function() {
             }
           }
         `;
-        let createTodoAssigneeVariables1 = {
-          "input": {
-            "primary": true,
-            "UserId": userId,
-            "TodoId": todoId,
-            "clientMutationId": "yo"
-          }
-        };
-        let createTodoAssigneeVariables2 = {
-          "input": {
-            "primary": false,
-            "UserId": userId,
-            "TodoId": todoId,
-            "clientMutationId": "yo"
-          }
-        };
+        createTodoAssigneeVariables1.input.UserId = userId;
+        createTodoAssigneeVariables1.input.TodoId = todoId;
 
-        return graphql(schema, createTodoAssigneeMutation, {}, {}, createTodoAssigneeVariables2)
+        return graphql(schema, createTodoAssigneeMutation, {}, {}, createTodoAssigneeVariables1)
       })
       .then(result => {
-        console.log(JSON.stringify(result, undefined, 4));
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.createTodoAssignee).to.be.an('object');
+        expect(result.data.createTodoAssignee.newTodoAssignee).to.be.an('object');
+        expect(result.data.createTodoAssignee.newTodoAssignee.id).to.be.an('string');
 
         let queryUser = `query {
+          todos {
+            id
+            text
+            completed
+          }
           todoAssignees {
             id
             primary
@@ -245,8 +271,38 @@ describe('getSchema', function() {
         return graphql(schema, queryUser);
       })
       .then(result => {
-        console.log(result);
-        console.log(JSON.stringify(result, undefined, 4));
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+
+        expect(result.data.todoAssignees).to.be.an('array');
+        expect(result.data.todoAssignees[0].id).to.be.an('string');
+
+        expect(result.data.users).to.be.an('array');
+        expect(result.data.users[0].id).to.be.an('string');
+
+        expect(result.data.users[0].todos).to.be.an('object');
+        expect(result.data.users[0].todos.edges).to.be.an('array');
+        expect(result.data.users[0].todos.edges[0]).to.be.an('object');
+        expect(result.data.users[0].todos.edges[0].node).to.be.an('object');
+
+        expect(result.data.users[0].assignedTodos).to.be.an('object');
+        expect(result.data.users[0].assignedTodos.total).to.be.an('number');
+        expect(result.data.users[0].assignedTodos.edges).to.be.an('array');
+        expect(result.data.users[0].assignedTodos.edges[0]).to.be.an('object');
+        expect(result.data.users[0].assignedTodos.edges[0].id).to.be.an('string');
+        expect(result.data.users[0].assignedTodos.edges[0].primary).to.be.an('boolean');
+        expect(result.data.users[0].assignedTodos.edges[0].node).to.be.an('object');
+
+        expect(result.data.users[0].assignedTodos.edges[0].primary).to.be.equal(true);
+        expect(result.data.users[0].assignedTodos.edges[0].id).to.be.equal(result.data.todoAssignees[0].id);
+
+        expect(result.data.users[0].assignedTodos.edges[0].node.id).to.be.an('string');
+        expect(result.data.users[0].assignedTodos.edges[0].id).to.be.equal(result.data.todoAssignees[0].id);
+        expect(result.data.users[0].assignedTodos.edges[0].node.id).to.be.equal(result.data.todos[0].id);
+        expect(result.data.users[0].assignedTodos.edges[0].node.text).to.be.equal(createTodoVariables.input.text);
+        expect(result.data.users[0].assignedTodos.edges[0].node.completed).to.be.equal(createTodoVariables.input.completed);
+
         cb();
       })
       .catch((error) => {

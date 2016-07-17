@@ -591,7 +591,7 @@ function getSchema(sequelize) {
           // Pass Through model to resolve function
           _.each(edgeFields, (edgeField, field) => {
             let oldResolve = edgeField.resolve;
-            console.log(field, edgeField, Object.keys(edgeField));
+            // console.log(field, edgeField, Object.keys(edgeField));
             if (typeof oldResolve !== 'function') {
               // console.log(oldResolve);
               let resolve = (source, args, context, info) => {
