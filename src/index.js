@@ -52,7 +52,21 @@ function queryName(Model, type) {
   }
 }
 function mutationName(Model, type) {
-  return camelcase(`${type}_${Model.name}`);
+  switch (type) {
+    case 'create': {
+      return camelcase(`${type}_${Model.name}`);
+    }
+    case 'update': {
+      return camelcase(`${type}_${pluralize.plural(Model.name)}`);
+    }
+    case 'delete': {
+      return camelcase(`${type}_${pluralize.plural(Model.name)}`);
+    }
+    default: {
+      console.warn('Unknown mutation type: ',type);
+      return camelcase(`${type}_${Model.name}`);
+    }
+  }
 }
 
 function _createRecord({
