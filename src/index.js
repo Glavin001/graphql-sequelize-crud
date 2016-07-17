@@ -255,7 +255,7 @@ function _updateRecord({
   let updateMutationName = mutationName(Model, 'update');
   mutations[updateMutationName] = mutationWithClientMutationId({
     name: updateMutationName,
-    description: `Update ${Model.name} record.`,
+    description: `Update ${Model.name} records.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
         commentToDescription: true,
@@ -286,9 +286,6 @@ function _updateRecord({
       var UpdateModelWhereType = new GraphQLInputObjectType({
         name: `Update${Model.name}WhereInput`,
         description: "Options to describe the scope of the search.",
-        // fields: _.assign({
-        //   [Model.primaryKeyAttribute]: globalIdField(Model.name)
-        // }, fields)
         fields
       });
 
@@ -435,7 +432,7 @@ function _deleteRecord({
   let deleteMutationName = mutationName(Model, 'delete');
   mutations[deleteMutationName] = mutationWithClientMutationId({
     name: deleteMutationName,
-    description: `Delete ${Model.name} record.`,
+    description: `Delete ${Model.name} records.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
         commentToDescription: true,
@@ -451,89 +448,58 @@ function _deleteRecord({
           let modelName = attr.references.model;
           // let modelType = types[modelName];
           fields[k] = globalIdField(modelName);
+        } else if (attr.primaryKey) {
+          fields[k] = globalIdField(Model.name);
+          fields[k].type = GraphQLID;
         }
       });
-      return fields;
-    },
-    outputFields: () => {
-      let output = {};
-      // New Record
-      output[camelcase(`new_${Model.name}`)] = {
-        type: modelType,
-        description: `The new ${Model.name}, if successfully created.`,
-        resolve: (args,e,context,info) => {
-          return resolver(Model, {
-            include: false
-          })({}, {
-            [Model.primaryKeyAttribute]: args[Model.primaryKeyAttribute]
-          }, context, info);
+
+      var DeleteModelWhereType = new GraphQLInputObjectType({
+        name: `Delete${Model.name}WhereInput`,
+        description: "Options to describe the scope of the search.",
+        fields
+      });
+
+      return {
+        where: {
+          type: DeleteModelWhereType,
         }
       };
 
-      // New Edges
-      _.each(associationsToModel[Model.name], (a) => {
-        let {
-          from,
-          type: atype,
-          key: field
-        } = a;
-        // console.log("Edge To", Model.name, "From", from, field, atype);
-        if (atype !== "BelongsTo") {
-          // HasMany Association
-          let {connection} = associationsFromModel[from][`${Model.name}_${field}`];
-          let fromType = ModelTypes[from];
-          // let nodeType = conn.nodeType;
-          // let association = Model.associations[field];
-          // let targetType = association
-          // console.log("Connection", Model.name, field, nodeType, conn, association);
-          output[camelcase(`new_${fromType.name}_${field}_Edge`)] = {
-            type: connection.edgeType,
-            resolve: (payload) => connection.resolveEdge(payload)
-          };
-        }
-      });
-      _.each(associationsFromModel[Model.name], (a) => {
-        let {
-          to,
-          type: atype,
-          foreignKey,
-          key: field
-        } = a;
-        // console.log("Edge From", Model.name, "To", to, field, as, atype, foreignKey);
-        if (atype === "BelongsTo") {
-          // BelongsTo association
-          let toType = ModelTypes[to];
-          output[field] = {
-            type: toType,
-            resolve: (args,e,context,info) => {
-              return resolver(Models[toType.name], {
-                include: false
-              })({}, { id: args[foreignKey] }, context, info);
-            }
-          };
-        }
-      });
+    },
+    outputFields: () => {
 
-      // console.log(`${Model.name} mutation output`, output);
-
-      return output;
+      return {
+        'affectedCount': {
+          type: GraphQLInt
+        }
+      };
     },
     mutateAndGetPayload: (data) => {
+      // console.log('mutate', data);
+      let {where} = data;
 
       // Fix Relay Global ID
-      _.each(Object.keys(data), (k) => {
-        if (k === "clientMutationId") {
-          return;
-        }
+      _.each(where, (value, k) => {
         // Check if reference attribute
         let attr = Model.rawAttributes[k];
-        if (attr.references) {
-          let {id} = fromGlobalId(data[k]);
-          data[k] = parseInt(id);
+        // console.log(k, value, attr);
+        if (attr.references || attr.primaryKey) {
+          let {id} = fromGlobalId(value);
+          where[k] = parseInt(id);
         }
       });
 
-      return Model.create(data);
+      return Model.destroy({
+        where
+      })
+      .then((result) => {
+        // console.log('result', result);
+        return {
+          where,
+          affectedCount: result
+        };
+      });
 
     }
   });

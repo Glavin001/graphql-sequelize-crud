@@ -12,8 +12,7 @@ const Sequelize = require('sequelize');
 
 describe('getSchema', function() {
 
-  var sequelize, User, Todo, TodoAssignee;
-  var r = Math.random().toString();
+  var rand, sequelize, User, Todo, TodoAssignee;
 
   before(function(cb) {
 
@@ -88,15 +87,22 @@ describe('getSchema', function() {
       through: TodoAssignee
     });
 
-    sequelize.sync({
-        false: true
-      })
-      .then(() => {
-        cb();
-      });
-
+    cb();
 
   });
+
+  beforeEach(function(cb) {
+
+    rand = parseInt(Math.random()*1000000000);
+
+    sequelize.sync({
+      force: true
+    })
+    .then(() => {
+      cb();
+    });
+
+  })
 
 
   it('should return GraphQL Schema', function() {
@@ -136,15 +142,17 @@ describe('getSchema', function() {
         createUser(input: $input) {
           newUser {
             id
+            email
+            password
           }
         }
       }
     `;
     let createUserVariables = {
       "input": {
-        "email": "glavin.wiechert@gmail.com",
-        "password": "glavin",
-        "clientMutationId": "yo"
+        "email": `testuser${rand}@web.com`,
+        "password": `password${rand}`,
+        "clientMutationId": "test"
       }
     };
     let createTodoVariables = {
@@ -152,7 +160,7 @@ describe('getSchema', function() {
         "text": "Something",
         "completed": false,
         // userId,
-        "clientMutationId": "yo"
+        "clientMutationId": "test"
       }
     };
     let createTodoAssigneeVariables1 = {
@@ -160,7 +168,7 @@ describe('getSchema', function() {
         "primary": true,
         // "UserId": userId,
         // "TodoId": todoId,
-        "clientMutationId": "yo"
+        "clientMutationId": "test"
       }
     };
     // let createTodoAssigneeVariables2 = {
@@ -183,6 +191,9 @@ describe('getSchema', function() {
         expect(result.data.createUser.newUser).to.be.an('object');
         expect(result.data.createUser.newUser.id).to.be.an('string');
 
+        expect(result.data.createUser.newUser.email).to.be.equal(createUserVariables.input.email);
+        expect(result.data.createUser.newUser.password).to.be.equal(createUserVariables.input.password);
+
         userId = result.data.createUser.newUser.id;
 
         let createTodoMutation = `
@@ -190,6 +201,8 @@ describe('getSchema', function() {
             createTodo(input: $input) {
               newTodo {
                 id
+                text
+                completed
               }
             }
           }
@@ -207,6 +220,9 @@ describe('getSchema', function() {
         expect(result.data.createTodo.newTodo).to.be.an('object');
         expect(result.data.createTodo.newTodo.id).to.be.an('string');
 
+        expect(result.data.createTodo.newTodo.text).to.be.equal(createTodoVariables.input.text);
+        expect(result.data.createTodo.newTodo.completed).to.be.equal(createTodoVariables.input.completed);
+
         todoId = result.data.createTodo.newTodo.id;
 
         let createTodoAssigneeMutation = `
@@ -214,6 +230,7 @@ describe('getSchema', function() {
             createTodoAssignee(input: $input) {
               newTodoAssignee {
                 id
+                primary
               }
             }
           }
@@ -231,6 +248,8 @@ describe('getSchema', function() {
         expect(result.data.createTodoAssignee).to.be.an('object');
         expect(result.data.createTodoAssignee.newTodoAssignee).to.be.an('object');
         expect(result.data.createTodoAssignee.newTodoAssignee.id).to.be.an('string');
+
+        expect(result.data.createTodoAssignee.newTodoAssignee.primary).to.be.equal(createTodoAssigneeVariables1.input.primary);
 
         let queryUser = `query {
           todos {
@@ -331,9 +350,9 @@ describe('getSchema', function() {
     `;
     let createUserVariables = {
       "input": {
-        "email": "glavin.wiechert2@gmail.com",
-        "password": "glavin2",
-        "clientMutationId": "yo"
+        "email": `testuser${rand}@web.com`,
+        "password": `password${rand}`,
+        "clientMutationId": "test"
       }
     };
     let updateUserMutation = `
@@ -353,12 +372,11 @@ describe('getSchema', function() {
     let updateUserVariables = {
       "input": {
         "values": {
-          "email": "glavin.wiechert3@gmail.com",
-          "password": "glavin3"
+          "email": `testuser${rand+1}@web.com`,
+          "password": `password${rand+1}`,
         },
-        "where": {
-        },
-        "clientMutationId": "yo"
+        "where": {},
+        "clientMutationId": "test"
       }
     };
 
@@ -403,5 +421,85 @@ describe('getSchema', function() {
       });
 
   });
+
+  it('should successfully create and delete User record', function(cb) {
+
+    var schema = getSchema(sequelize);
+
+    let createUserMutation = `
+      mutation createUserTest($input: createUserInput!) {
+        createUser(input: $input) {
+          newUser {
+            id
+            email
+            password
+          }
+        }
+      }
+    `;
+    let createUserVariables = {
+      "input": {
+        "email": `testuser${rand}@web.com`,
+        "password": `password${rand}`,
+        "clientMutationId": "test"
+      }
+    };
+    let deleteUsersMutation = `
+      mutation deleteUsersTest($input: deleteUsersInput!) {
+        deleteUsers(input: $input) {
+          affectedCount
+        }
+      }
+    `;
+    let deleteUsersVariables = {
+      "input": {
+        "where": {},
+        "clientMutationId": "test"
+      }
+    };
+
+    let userId;
+
+    return graphql(schema, createUserMutation, {}, {}, createUserVariables)
+      .then(result => {
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.createUser).to.be.an('object');
+        expect(result.data.createUser.newUser).to.be.an('object');
+        expect(result.data.createUser.newUser.id).to.be.an('string');
+
+        userId = result.data.createUser.newUser.id;
+        deleteUsersVariables.input.where.id = userId;
+
+        // console.log(updateUserVariables);
+        return graphql(schema, deleteUsersMutation, {}, {}, deleteUsersVariables);
+      })
+      .then(result => {
+        // console.log(result);
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.deleteUsers).to.be.an('object');
+        // expect(result.data.deleteUsers.nodes).to.be.an('array');
+        // expect(result.data.deleteUsers.affectedCount).to.be.equal(1);
+        // expect(result.data.deleteUsers.nodes.length).to.be.equal(1);
+        // expect(result.data.deleteUsers.nodes[0]).to.be.an('object');
+        // expect(result.data.deleteUsers.nodes[0].newUser).to.be.an('object');
+        // expect(result.data.deleteUsers.nodes[0].newUser.id).to.be.an('string');
+        // expect(result.data.deleteUsers.nodes[0].newUser.email).to.be.an('string');
+        // expect(result.data.deleteUsers.nodes[0].newUser.password).to.be.an('string');
+        //
+        // expect(result.data.deleteUsers.nodes[0].newUser.email).to.be.equal(updateUserVariables.input.values.email);
+        // expect(result.data.deleteUsers.nodes[0].newUser.password).to.be.equal(updateUserVariables.input.values.password);
+
+        cb();
+      })
+      .catch((error) => {
+        cb(error);
+      });
+
+  });
+
 
 });
