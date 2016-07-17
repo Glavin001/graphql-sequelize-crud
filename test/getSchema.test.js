@@ -127,7 +127,7 @@ describe('getSchema', function() {
 
   });
 
-  it('should successfully createUser, createTodo, createTodoAssignee', function(cb) {
+  it('should successfully create records', function(cb) {
 
     var schema = getSchema(sequelize);
 
@@ -177,6 +177,7 @@ describe('getSchema', function() {
       .then(result => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
+        expect(result.errors).to.be.equal(undefined, `An error occurred: ${result.errors}`);
         expect(result.data).to.be.an('object');
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
@@ -200,6 +201,7 @@ describe('getSchema', function() {
       .then(result => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
+        expect(result.errors).to.be.equal(undefined, `An error occurred: ${result.errors}`);
         expect(result.data).to.be.an('object');
         expect(result.data.createTodo).to.be.an('object');
         expect(result.data.createTodo.newTodo).to.be.an('object');
@@ -224,6 +226,7 @@ describe('getSchema', function() {
       .then(result => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
+        expect(result.errors).to.be.equal(undefined, `An error occurred: ${result.errors}`);
         expect(result.data).to.be.an('object');
         expect(result.data.createTodoAssignee).to.be.an('object');
         expect(result.data.createTodoAssignee.newTodoAssignee).to.be.an('object');
@@ -302,6 +305,96 @@ describe('getSchema', function() {
         expect(result.data.users[0].assignedTodos.edges[0].node.id).to.be.equal(result.data.todos[0].id);
         expect(result.data.users[0].assignedTodos.edges[0].node.text).to.be.equal(createTodoVariables.input.text);
         expect(result.data.users[0].assignedTodos.edges[0].node.completed).to.be.equal(createTodoVariables.input.completed);
+
+        cb();
+      })
+      .catch((error) => {
+        cb(error);
+      });
+
+  });
+
+  it('should successfully create and update User record', function(cb) {
+
+    var schema = getSchema(sequelize);
+
+    let createUserMutation = `
+      mutation createUserTest($input: createUserInput!) {
+        createUser(input: $input) {
+          newUser {
+            id
+            email
+            password
+          }
+        }
+      }
+    `;
+    let createUserVariables = {
+      "input": {
+        "email": "glavin.wiechert2@gmail.com",
+        "password": "glavin2",
+        "clientMutationId": "yo"
+      }
+    };
+    let updateUserMutation = `
+      mutation updateUserTest($input: updateUserInput!) {
+        updateUser(input: $input) {
+          affectedCount
+          nodes {
+            newUser {
+              id
+              email
+              password
+            }
+          }
+        }
+      }
+    `;
+    let updateUserVariables = {
+      "input": {
+        "values": {
+          "email": "glavin.wiechert3@gmail.com",
+          "password": "glavin3"
+        },
+        "where": {
+        },
+        "clientMutationId": "yo"
+      }
+    };
+
+    let userId;
+
+    return graphql(schema, createUserMutation, {}, {}, createUserVariables)
+      .then(result => {
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.createUser).to.be.an('object');
+        expect(result.data.createUser.newUser).to.be.an('object');
+        expect(result.data.createUser.newUser.id).to.be.an('string');
+
+        userId = result.data.createUser.newUser.id;
+        updateUserVariables.input.where.id = userId;
+
+        // console.log(updateUserVariables);
+        return graphql(schema, updateUserMutation, {}, {}, updateUserVariables);
+      })
+      .then(result => {
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.updateUser).to.be.an('object');
+        expect(result.data.updateUser.nodes).to.be.an('array');
+        expect(result.data.updateUser.affectedCount).to.be.equal(1);
+        expect(result.data.updateUser.nodes.length).to.be.equal(1);
+        expect(result.data.updateUser.nodes[0]).to.be.an('object');
+        expect(result.data.updateUser.nodes[0].newUser).to.be.an('object');
+        expect(result.data.updateUser.nodes[0].newUser.id).to.be.an('string');
+        expect(result.data.updateUser.nodes[0].newUser.email).to.be.an('string');
+        expect(result.data.updateUser.nodes[0].newUser.password).to.be.an('string');
+
+        expect(result.data.updateUser.nodes[0].newUser.email).to.be.equal(updateUserVariables.input.values.email);
+        expect(result.data.updateUser.nodes[0].newUser.password).to.be.equal(updateUserVariables.input.values.password);
 
         cb();
       })

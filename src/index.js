@@ -7,7 +7,9 @@ const {
   GraphQLString,
   GraphQLList,
   GraphQLNonNull,
-  GraphQLBoolean
+  GraphQLBoolean,
+  GraphQLInputObjectType,
+  GraphQLID
 } = require('graphql');
 const _ = require('lodash');
 const pluralize = require('pluralize');
@@ -20,11 +22,17 @@ const {
 } = require("graphql-relay");
 
 const {
-  attributeFields, resolver,
+  defaultArgs,
+  defaultListArgs,
+  attributeFields,
+  resolver,
   relay: {
-    sequelizeNodeInterface, sequelizeConnection
+    sequelizeNodeInterface,
+    sequelizeConnection
   }
 } = require("graphql-sequelize");
+
+const jsonType = require("graphql-sequelize/lib/types/jsonType.js");
 
 function connectionNameForAssociation(Model, associationName) {
   return camelcase(`${Model.name}_${associationName}`);
@@ -64,8 +72,10 @@ function _createRecord({
     inputFields: () => {
       let fields = attributeFields(Model, {
         commentToDescription: true,
+        exclude: [Model.primaryKeyAttribute],
         cache
       });
+
       // Fix Relay Global ID
       _.each(Object.keys(Model.rawAttributes), (k) => {
         // Check if reference attribute
@@ -77,11 +87,22 @@ function _createRecord({
           fields[k] = globalIdField(modelName);
         }
       });
-      // FIXME: Handle primaryKey with different name
-      delete fields.id;
+
+      // Remove primaryKey attribute
+      // _.assign(fields, attributeFields(Model, {
+      //   commentToDescription: true,
+      //   only: [Model.primaryKeyAttribute],
+      //   allowNull: true,
+      //   cache
+      // }));
+
+      let globalIdFieldType = globalIdField(Model.name);
+      globalIdFieldType.type = GraphQLID;
+
       // FIXME: Handle timestamps
       delete fields.createdAt;
       delete fields.updatedAt;
+
       return fields;
     },
     outputFields: () => {
@@ -93,7 +114,9 @@ function _createRecord({
         resolve: (args,e,context,info) => {
           return resolver(Model, {
             include: false
-          })({}, {id: args.id}, context, info);
+          })({}, {
+            [Model.primaryKeyAttribute]: args[Model.primaryKeyAttribute]
+          }, context, info);
         }
       };
 
@@ -175,11 +198,7 @@ function _findRecord({
   let findByIdQueryName = queryName(Model, 'findById'); //`find${Model.name}ById`;
   queries[findByIdQueryName] = {
     type: modelType,
-    args: {
-      id: {
-        type: new GraphQLNonNull(GraphQLInt)
-      }
-    },
+    args: defaultArgs(Model),
     resolve: resolver(Model, {
       include: false // disable auto including of associations based on AST - default: true
     })
@@ -194,16 +213,17 @@ function _findAll({
   let findAllQueryName = queryName(Model, 'findAll');
   queries[findAllQueryName] = {
     type: new GraphQLList(modelType),
-    args: {
-      // An arg with the key limit will automatically be converted to a limit on the target
-      limit: {
-        type: GraphQLInt
-      },
-      // An arg with the key order will automatically be converted to a order on the target
-      order: {
-        type: GraphQLString
-      }
-    },
+    args: defaultListArgs(Model),
+    // args: {
+    //   // An arg with the key limit will automatically be converted to a limit on the target
+    //   limit: {
+    //     type: GraphQLInt
+    //   },
+    //   // An arg with the key order will automatically be converted to a order on the target
+    //   order: {
+    //     type: GraphQLString
+    //   }
+    // },
     resolve: resolver(Model)
   };
 }
@@ -218,13 +238,14 @@ function _updateRecord({
   cache
 }) {
 
-  let createMutationName = mutationName(Model, 'update');
-  mutations[createMutationName] = mutationWithClientMutationId({
-    name: createMutationName,
+  let updateMutationName = mutationName(Model, 'update');
+  mutations[updateMutationName] = mutationWithClientMutationId({
+    name: updateMutationName,
     description: `Update ${Model.name} record.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
         commentToDescription: true,
+        allowNull: true,
         cache
       });
       // Fix Relay Global ID
@@ -236,14 +257,36 @@ function _updateRecord({
           let modelName = attr.references.model;
           // let modelType = types[modelName];
           fields[k] = globalIdField(modelName);
+        } else if (attr.primaryKey) {
+          fields[k] = globalIdField(Model.name);
+          fields[k].type = GraphQLID;
         }
       });
-      // FIXME: Handle primaryKey with different name
-      delete fields.id;
-      // FIXME: Handle timestamps
-      delete fields.createdAt;
-      delete fields.updatedAt;
-      return fields;
+
+      var UpdateModelValuesType = new GraphQLInputObjectType({
+        name: `Update${Model.name}ValuesInput`,
+        description: "Values to update",
+        fields
+      });
+
+      var UpdateModelWhereType = new GraphQLInputObjectType({
+        name: `Update${Model.name}WhereInput`,
+        description: "Options to describe the scope of the search.",
+        // fields: _.assign({
+        //   [Model.primaryKeyAttribute]: globalIdField(Model.name)
+        // }, fields)
+        fields
+      });
+
+      return {
+        values: {
+          type: UpdateModelValuesType
+        },
+        where: {
+          type: UpdateModelWhereType,
+        }
+      };
+
     },
     outputFields: () => {
       let output = {};
@@ -254,7 +297,9 @@ function _updateRecord({
         resolve: (args,e,context,info) => {
           return resolver(Model, {
             include: false
-          })({}, {id: args.id}, context, info);
+          })({}, {
+            [Model.primaryKeyAttribute]: args[Model.primaryKeyAttribute]
+          }, context, info);
         }
       };
 
@@ -304,24 +349,59 @@ function _updateRecord({
 
       // console.log(`${Model.name} mutation output`, output);
 
-      return output;
+      let outputType = new GraphQLObjectType({
+        name: `Update${Model.name}Output`,
+        fields: output
+      });
+
+      return {
+        'nodes': {
+          type: new GraphQLList(outputType),
+          resolve: (source, args, context, info) => {
+            // console.log('update', source, args);
+            return Model.findAll({
+              where: source.where
+            });
+          }
+        },
+        'affectedCount': {
+          type: GraphQLInt
+        }
+      };
     },
     mutateAndGetPayload: (data) => {
+      // console.log('mutate', data);
+      let {values, where} = data;
 
       // Fix Relay Global ID
-      _.each(Object.keys(data), (k) => {
-        if (k === "clientMutationId") {
-          return;
-        }
+      _.each(values, (value, k) => {
         // Check if reference attribute
         let attr = Model.rawAttributes[k];
-        if (attr.references) {
-          let {id} = fromGlobalId(data[k]);
-          data[k] = parseInt(id);
+        // console.log(k, value, attr);
+        if (attr.references || attr.primaryKey) {
+          let {id} = fromGlobalId(value);
+          values[k] = parseInt(id);
+        }
+      });
+      _.each(where, (value, k) => {
+        // Check if reference attribute
+        let attr = Model.rawAttributes[k];
+        // console.log(k, value, attr);
+        if (attr.references || attr.primaryKey) {
+          let {id} = fromGlobalId(value);
+          where[k] = parseInt(id);
         }
       });
 
-      return Model.create(data);
+      return Model.update(values, {
+        where
+      })
+      .then((result) => {
+        return {
+          where,
+          affectedCount: result[0]
+        };
+      });
 
     }
   });
@@ -338,13 +418,14 @@ function _deleteRecord({
   cache
 }) {
 
-  let createMutationName = mutationName(Model, 'delete');
-  mutations[createMutationName] = mutationWithClientMutationId({
-    name: createMutationName,
+  let deleteMutationName = mutationName(Model, 'delete');
+  mutations[deleteMutationName] = mutationWithClientMutationId({
+    name: deleteMutationName,
     description: `Delete ${Model.name} record.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
         commentToDescription: true,
+        allowNull: true,
         cache
       });
       // Fix Relay Global ID
@@ -358,11 +439,6 @@ function _deleteRecord({
           fields[k] = globalIdField(modelName);
         }
       });
-      // FIXME: Handle primaryKey with different name
-      delete fields.id;
-      // FIXME: Handle timestamps
-      delete fields.createdAt;
-      delete fields.updatedAt;
       return fields;
     },
     outputFields: () => {
@@ -374,7 +450,9 @@ function _deleteRecord({
         resolve: (args,e,context,info) => {
           return resolver(Model, {
             include: false
-          })({}, {id: args.id}, context, info);
+          })({}, {
+            [Model.primaryKeyAttribute]: args[Model.primaryKeyAttribute]
+          }, context, info);
         }
       };
 
@@ -607,21 +685,6 @@ function getSchema(sequelize) {
               edgeField.resolve = resolve.bind(edgeField);
             }
           });
-          // edgeFields = {
-          //   primary: {
-          //     type: GraphQLBoolean,
-          //     resolve: (edge) => {
-          //       let e = edge.node[aModel.name];
-          //       console.log('edgeFields primary', edge, arguments, e);
-          //
-          //       /*
-          //        * We attach the connection source to edges
-          //        */
-          //       // return edge.node.createdBy === edge.source.id;
-          //       return true;
-          //     }
-          //   }
-          // }
         }
 
         const connection = sequelizeConnection({
