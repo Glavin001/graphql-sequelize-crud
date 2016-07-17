@@ -1,4 +1,8 @@
-# graphql-sequelize-crud
+# graphql-sequelize-crud [![Build Status](https://travis-ci.org/Glavin001/graphql-sequelize-crud.svg?branch=master)](https://travis-ci.org/Glavin001/graphql-sequelize-crud)
+
+[![NPM](https://nodei.co/npm/graphql-sequelize-crud.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/graphql-sequelize-crud/)
+[![NPM](https://nodei.co/npm-dl/graphql-sequelize-crud.png?months=3&height=3)](https://nodei.co/npm/graphql-sequelize-crud/)
+
 > Automatically generate queries and mutations from Sequelize models
 
 ---
