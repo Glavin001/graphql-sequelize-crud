@@ -10,7 +10,7 @@
 | Demo |
 | --- |
 | See [`demo/index.js`](https://github.com/Glavin001/graphql-sequelize-crud/blob/master/demo/index.js) for demo source code. |
-| The following is automatically generated from a simple Sequelize schema. ![graph](https://cloud.githubusercontent.com/assets/1885333/16901748/5e89e860-4c22-11e6-9bf0-937dd98b4efc.png) Generated using [`graphql-viz`](https://github.com/sheerun/graphqlviz). |
+| The following is automatically generated from a simple Sequelize schema. ![graph](https://raw.githubusercontent.com/Glavin001/graphql-sequelize-crud/master/graph.png) Generated using [`graphql-viz`](https://github.com/sheerun/graphqlviz). |
 
 ## Why
 
