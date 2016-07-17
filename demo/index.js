@@ -48,6 +48,16 @@ const Todo = sequelize.define('Todo', {
 }, {
   timestamps: true
 });
+
+const TodoAssignee = sequelize.define('TodoAssignee', {
+  primary: {
+    type: Sequelize.BOOLEAN
+  }
+}, {
+  timestamps: true
+});
+
+
 User.hasMany(Todo, {
   as: 'todos',
   foreignKey: 'userId'
@@ -55,6 +65,16 @@ User.hasMany(Todo, {
 Todo.belongsTo(User, {
   as: 'user',
   foreignKey: 'userId'
+});
+
+// belongsToMany
+User.belongsToMany(Todo, {
+  as: 'assignedTodos',
+  through: TodoAssignee
+});
+Todo.belongsToMany(User, {
+  as: 'assignees',
+  through: TodoAssignee
 });
 
 sequelize.sync({

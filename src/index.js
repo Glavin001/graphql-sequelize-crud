@@ -6,7 +6,8 @@ const {
   GraphQLInt,
   GraphQLString,
   GraphQLList,
-  GraphQLNonNull
+  GraphQLNonNull,
+  GraphQLBoolean
 } = require('graphql');
 const _ = require('lodash');
 const pluralize = require('pluralize');
@@ -76,9 +77,11 @@ function _createRecord({
           fields[k] = globalIdField(modelName);
         }
       });
+      // FIXME: Handle primaryKey with different name
       delete fields.id;
-      delete fields.created_at;
-      delete fields.updated_at;
+      // FIXME: Handle timestamps
+      delete fields.createdAt;
+      delete fields.updatedAt;
       return fields;
     },
     outputFields: () => {
@@ -235,9 +238,11 @@ function _updateRecord({
           fields[k] = globalIdField(modelName);
         }
       });
+      // FIXME: Handle primaryKey with different name
       delete fields.id;
-      delete fields.created_at;
-      delete fields.updated_at;
+      // FIXME: Handle timestamps
+      delete fields.createdAt;
+      delete fields.updatedAt;
       return fields;
     },
     outputFields: () => {
@@ -353,9 +358,11 @@ function _deleteRecord({
           fields[k] = globalIdField(modelName);
         }
       });
+      // FIXME: Handle primaryKey with different name
       delete fields.id;
-      delete fields.created_at;
-      delete fields.updated_at;
+      // FIXME: Handle timestamps
+      delete fields.createdAt;
+      delete fields.updatedAt;
       return fields;
     },
     outputFields: () => {
@@ -572,11 +579,66 @@ function getSchema(sequelize) {
         });
       } else {
         // HasMany
+        let edgeFields = {};
+        if (atype === "BelongsToMany") {
+          let aModel = association.through.model;
+          // console.log('BelongsToMany model', aModel);
+          edgeFields = attributeFields(aModel, {
+            globalId: true,
+            commentToDescription: true,
+            cache
+          });
+          // Pass Through model to resolve function
+          _.each(edgeFields, (edgeField, field) => {
+            let oldResolve = edgeField.resolve;
+            console.log(field, edgeField, Object.keys(edgeField));
+            if (typeof oldResolve !== 'function') {
+              // console.log(oldResolve);
+              let resolve = (source, args, context, info) => {
+                let e = source.node[aModel.name];
+                return e[field];
+              };
+              edgeField.resolve = resolve.bind(edgeField);
+            } else {
+              let resolve = (source, args, context, info) => {
+                let e = source.node[aModel.name];
+                return oldResolve(e, args, context, info);
+              };
+              edgeField.resolve = resolve.bind(edgeField);
+            }
+          });
+          // edgeFields = {
+          //   primary: {
+          //     type: GraphQLBoolean,
+          //     resolve: (edge) => {
+          //       let e = edge.node[aModel.name];
+          //       console.log('edgeFields primary', edge, arguments, e);
+          //
+          //       /*
+          //        * We attach the connection source to edges
+          //        */
+          //       // return edge.node.createdBy === edge.source.id;
+          //       return true;
+          //     }
+          //   }
+          // }
+        }
+
         const connection = sequelizeConnection({
           name: connectionName,
           nodeType: targetType,
           target: association,
-          as
+          connectionFields: {
+            total: {
+              type: new GraphQLNonNull(GraphQLInt),
+              description: `Total count of ${targetType.name} results associated with ${Model.name}.`,
+              resolve({source}) {
+                let {accessors} = association;
+                return source[accessors.count]();
+              }
+            }
+          },
+          edgeFields
         });
         ModelTypes[connectionName] = connection;
         _.set(associationsToModel, `${targetType.name}.${Model.name}_${akey}`, {
