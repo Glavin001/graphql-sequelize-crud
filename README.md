@@ -12,11 +12,54 @@
 | See [`demo/index.js`](https://github.com/Glavin001/graphql-sequelize-crud/blob/master/demo/index.js) for demo source code. |
 | The following is automatically generated from a simple Sequelize schema. ![graph](https://raw.githubusercontent.com/Glavin001/graphql-sequelize-crud/master/graph.png) Generated using [`graphql-viz`](https://github.com/sheerun/graphqlviz). |
 
+## Installation
+
+```bash
+# Install Peer Dependencies
+npm install --save graphql graphql-relay graphql-sequelize sequelize
+# Install GraphQL-Sequelize-CRUD
+npm install --save graphql-sequelize-crud
+```
+
+## Usage
+
+See [`demo/index.js`](https://github.com/Glavin001/graphql-sequelize-crud/blob/master/demo/index.js) for demo source code.
+
+```javascript
+// Project Dependencies.
+const Sequelize = require('sequelize');
+
+// Optional: Use express-graphql.
+const express = require('express');
+const graphqlHTTP = require('express-graphql');
+const app = express();
+
+// Create Sequelize instance.
+const sequelize = new Sequelize(/* configure Sequelize */);
+
+// Define Sequelize models.
+// See demo source code.
+// ...
+
+// Generate GraphQL Schema from Sequelize instance and models.
+const schema = getSchema(sequelize);
+
+// Optional: Create express-graphql server.
+app.use('/graphql', graphqlHTTP({
+  schema: schema,
+  graphiql: true
+}));
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`);
+});
+```
+
 ## Why
 
-- Less error prone development. No more keeping GraphQL in sync with Database fields.
-- [Don't Repeat Yourself](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
-- Power of GraphQL and Relay with rapid database development of Sequelize
+- :white_check_mark: Less error prone development. No more keeping GraphQL in sync with Database fields.
+- :white_check_mark: [Don't Repeat Yourself](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself).
+- :white_check_mark: Power of GraphQL and Relay with rapid database development of Sequelize
 
 ## Features
 - [x] Generated GraphQL API only from Sequelize Models defintitions
