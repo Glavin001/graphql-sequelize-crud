@@ -7,6 +7,11 @@
 
 ---
 
+| Demo |
+| --- |
+| See [`demo/index.js`](https://github.com/Glavin001/graphql-sequelize-crud/blob/master/demo/index.js) for demo source code. |
+| The following is automatically generated from a simple Sequelize schema. ![graph](https://cloud.githubusercontent.com/assets/1885333/16901748/5e89e860-4c22-11e6-9bf0-937dd98b4efc.png) Generated using [`graphql-viz`](https://github.com/sheerun/graphqlviz). |
+
 ## Why
 
 - Less error prone development. No more keeping GraphQL in sync with Database fields.
@@ -14,13 +19,13 @@
 - Power of GraphQL and Relay with rapid database development of Sequelize
 
 ## Features
-- [x] Generated GraphQL API only from Sequelize Models defintitions 
-- [x] [Relay](https://facebook.github.io/relay/) compatiable GraphQL API
+- [x] Generated GraphQL API only from Sequelize Models defintitions
+  - [x] [Relay](https://facebook.github.io/relay/) compatiable GraphQL API
 - [x] Generate Queries
-   - [x] READ single
-   - [x] READ all
+  - [x] READ single
+  - [x] READ all
 - [ ] Generate Mutations
-   - [x] CREATE
-   - [ ] UPDATE
-   - [ ] DELETE
+  - [x] CREATE
+  - [ ] UPDATE
+  - [ ] DELETE
 - [x] Custom queries and mutations within Sequelize Models defitions
