@@ -126,9 +126,9 @@ describe('getSchema', function() {
     expect(schema._mutationType).to.be.an('object');
     expect(schema._mutationType._fields).to.be.an('object');
     expect(Object.keys(schema._mutationType._fields)).to.deep.equal([
-      'createUser', 'updateUsers', 'deleteUsers',
-      'createTodo', 'updateTodos', 'deleteTodos',
-      'createTodoAssignee', 'updateTodoAssignees', 'deleteTodoAssignees'
+      'createUser', 'updateUser', 'updateUsers', 'deleteUsers',
+      'createTodo', 'updateTodo', 'updateTodos', 'deleteTodos',
+      'createTodoAssignee', 'updateTodoAssignee', 'updateTodoAssignees', 'deleteTodoAssignees'
     ]);
 
   });
@@ -333,7 +333,7 @@ describe('getSchema', function() {
 
   });
 
-  it('should successfully create and update User record', function(cb) {
+  it('should successfully create and update single User record', function(cb) {
 
     var schema = getSchema(sequelize);
 
@@ -356,6 +356,88 @@ describe('getSchema', function() {
       }
     };
     let updateUserMutation = `
+      mutation updateUserTest($input: updateUserInput!) {
+        updateUser(input: $input) {
+          newUser {
+            id
+            email
+            password
+          }
+        }
+      }
+    `;
+    let updateUserVariables = {
+      "input": {
+        "values": {
+          "email": `testuser${rand+1}@web.com`,
+          "password": `password${rand-1}`,
+        },
+        "clientMutationId": "test"
+      }
+    };
+
+    let userId;
+
+    return graphql(schema, createUserMutation, {}, {}, createUserVariables)
+      .then(result => {
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.createUser).to.be.an('object');
+        expect(result.data.createUser.newUser).to.be.an('object');
+        expect(result.data.createUser.newUser.id).to.be.an('string');
+
+        userId = result.data.createUser.newUser.id;
+        updateUserVariables.input.id = userId;
+
+        // console.log(updateUserVariables);
+        return graphql(schema, updateUserMutation, {}, {}, updateUserVariables);
+      })
+      .then(result => {
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.updateUser).to.be.an('object');
+        expect(result.data.updateUser.newUser).to.be.an('object');
+        expect(result.data.updateUser.newUser.id).to.be.an('string');
+        expect(result.data.updateUser.newUser.email).to.be.an('string');
+        expect(result.data.updateUser.newUser.password).to.be.an('string');
+
+        expect(result.data.updateUser.newUser.email).to.be.equal(updateUserVariables.input.values.email);
+        expect(result.data.updateUser.newUser.password).to.be.equal(updateUserVariables.input.values.password);
+
+        cb();
+      })
+      .catch((error) => {
+        cb(error);
+      });
+
+  });
+
+
+  it('should successfully create and update User records', function(cb) {
+
+    var schema = getSchema(sequelize);
+
+    let createUserMutation = `
+      mutation createUserTest($input: createUserInput!) {
+        createUser(input: $input) {
+          newUser {
+            id
+            email
+            password
+          }
+        }
+      }
+    `;
+    let createUserVariables = {
+      "input": {
+        "email": `testuser${rand}@web.com`,
+        "password": `password${rand}`,
+        "clientMutationId": "test"
+      }
+    };
+    let updateUsersMutation = `
       mutation updateUsersTest($input: updateUsersInput!) {
         updateUsers(input: $input) {
           affectedCount
@@ -369,7 +451,7 @@ describe('getSchema', function() {
         }
       }
     `;
-    let updateUserVariables = {
+    let updateUsersVariables = {
       "input": {
         "values": {
           "email": `testuser${rand+1}@web.com`,
@@ -392,10 +474,10 @@ describe('getSchema', function() {
         expect(result.data.createUser.newUser.id).to.be.an('string');
 
         userId = result.data.createUser.newUser.id;
-        updateUserVariables.input.where.id = userId;
+        updateUsersVariables.input.where.id = userId;
 
         // console.log(updateUserVariables);
-        return graphql(schema, updateUserMutation, {}, {}, updateUserVariables);
+        return graphql(schema, updateUsersMutation, {}, {}, updateUsersVariables);
       })
       .then(result => {
         // console.log(result, JSON.stringify(result, undefined, 4));
@@ -411,8 +493,8 @@ describe('getSchema', function() {
         expect(result.data.updateUsers.nodes[0].newUser.email).to.be.an('string');
         expect(result.data.updateUsers.nodes[0].newUser.password).to.be.an('string');
 
-        expect(result.data.updateUsers.nodes[0].newUser.email).to.be.equal(updateUserVariables.input.values.email);
-        expect(result.data.updateUsers.nodes[0].newUser.password).to.be.equal(updateUserVariables.input.values.password);
+        expect(result.data.updateUsers.nodes[0].newUser.email).to.be.equal(updateUsersVariables.input.values.email);
+        expect(result.data.updateUsers.nodes[0].newUser.password).to.be.equal(updateUsersVariables.input.values.password);
 
         cb();
       })
@@ -422,7 +504,7 @@ describe('getSchema', function() {
 
   });
 
-  it('should successfully create and delete User record', function(cb) {
+  it('should successfully create and delete User records', function(cb) {
 
     var schema = getSchema(sequelize);
 

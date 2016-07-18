@@ -32,7 +32,7 @@ const User = sequelize.define('User', {
     allowNull: false
   }
 }, {
-  timestamps: false
+  timestamps: true
 });
 const Todo = sequelize.define('Todo', {
   id: {
