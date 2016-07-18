@@ -511,7 +511,7 @@ function _updateRecord({
 }
 
 
-function _deleteRecord({
+function _deleteRecords({
   mutations,
   Model,
   modelType,
@@ -561,6 +561,53 @@ function _deleteRecord({
           where,
           affectedCount
         };
+      });
+    }
+  });
+
+}
+
+
+function _deleteRecord({
+  mutations,
+  Model,
+  modelType,
+  ModelTypes,
+  associationsToModel,
+  associationsFromModel,
+  cache
+}) {
+
+  let deleteMutationName = mutationName(Model, 'deleteOne');
+  mutations[deleteMutationName] = mutationWithClientMutationId({
+    name: deleteMutationName,
+    description: `Delete single ${Model.name} record.`,
+    inputFields: () => {
+      return {
+        [Model.primaryKeyAttribute]: globalIdField(Model.name),
+      };
+    },
+    outputFields: () => {
+      let idField = camelcase(`deleted_${Model.name}_id`);
+      return {
+        [idField]: {
+          type: GraphQLID,
+          resolve(source) {
+            return source[Model.primaryKeyAttribute];
+          }
+        }
+      };
+    },
+    mutateAndGetPayload: (data) => {
+      let where = {
+        [Model.primaryKeyAttribute]: data[Model.primaryKeyAttribute]
+      };
+      convertFieldsFromGlobalId(Model, where);
+      return Model.destroy({
+        where
+      })
+      .then((affectedCount) => {
+        return data;
       });
     }
   });
@@ -677,6 +724,17 @@ function getSchema(sequelize) {
       associationsFromModel,
       cache
     });
+
+    _deleteRecords({
+      mutations,
+      Model,
+      modelType,
+      ModelTypes: types,
+      associationsToModel,
+      associationsFromModel,
+      cache
+    });
+
 
     return types;
   }, {});

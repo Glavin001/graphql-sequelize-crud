@@ -126,9 +126,9 @@ describe('getSchema', function() {
     expect(schema._mutationType).to.be.an('object');
     expect(schema._mutationType._fields).to.be.an('object');
     expect(Object.keys(schema._mutationType._fields)).to.deep.equal([
-      'createUser', 'updateUser', 'updateUsers', 'deleteUsers',
-      'createTodo', 'updateTodo', 'updateTodos', 'deleteTodos',
-      'createTodoAssignee', 'updateTodoAssignee', 'updateTodoAssignees', 'deleteTodoAssignees'
+      'createUser', 'updateUser', 'updateUsers', 'deleteUser', 'deleteUsers',
+      'createTodo', 'updateTodo', 'updateTodos', 'deleteTodo', 'deleteTodos',
+      'createTodoAssignee', 'updateTodoAssignee', 'updateTodoAssignees', 'deleteTodoAssignee', 'deleteTodoAssignees'
     ]);
 
   });
@@ -403,6 +403,7 @@ describe('getSchema', function() {
         expect(result.data.updateUser.newUser.email).to.be.an('string');
         expect(result.data.updateUser.newUser.password).to.be.an('string');
 
+        expect(result.data.updateUser.newUser.id).to.be.equal(updateUserVariables.input.id);
         expect(result.data.updateUser.newUser.email).to.be.equal(updateUserVariables.input.values.email);
         expect(result.data.updateUser.newUser.password).to.be.equal(updateUserVariables.input.values.password);
 
@@ -565,6 +566,84 @@ describe('getSchema', function() {
         expect(result.data.deleteUsers).to.be.an('object');
         // expect(result.data.deleteUsers.nodes).to.be.an('array');
         // expect(result.data.deleteUsers.affectedCount).to.be.equal(1);
+        // expect(result.data.deleteUsers.nodes.length).to.be.equal(1);
+        // expect(result.data.deleteUsers.nodes[0]).to.be.an('object');
+        // expect(result.data.deleteUsers.nodes[0].newUser).to.be.an('object');
+        // expect(result.data.deleteUsers.nodes[0].newUser.id).to.be.an('string');
+        // expect(result.data.deleteUsers.nodes[0].newUser.email).to.be.an('string');
+        // expect(result.data.deleteUsers.nodes[0].newUser.password).to.be.an('string');
+        //
+        // expect(result.data.deleteUsers.nodes[0].newUser.email).to.be.equal(updateUserVariables.input.values.email);
+        // expect(result.data.deleteUsers.nodes[0].newUser.password).to.be.equal(updateUserVariables.input.values.password);
+
+        cb();
+      })
+      .catch((error) => {
+        cb(error);
+      });
+
+  });
+
+  it('should successfully create and delete single User record', function(cb) {
+
+    var schema = getSchema(sequelize);
+
+    let createUserMutation = `
+      mutation createUserTest($input: createUserInput!) {
+        createUser(input: $input) {
+          newUser {
+            id
+            email
+            password
+          }
+        }
+      }
+    `;
+    let createUserVariables = {
+      "input": {
+        "email": `testuser${rand}@web.com`,
+        "password": `password${rand}`,
+        "clientMutationId": "test"
+      }
+    };
+    let deleteUserMutation = `
+      mutation deleteUserTest($input: deleteUserInput!) {
+        deleteUser(input: $input) {
+          deletedUserId
+        }
+      }
+    `;
+    let deleteUserVariables = {
+      "input": {
+        "clientMutationId": "test"
+      }
+    };
+
+    let userId;
+
+    return graphql(schema, createUserMutation, {}, {}, createUserVariables)
+      .then(result => {
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.createUser).to.be.an('object');
+        expect(result.data.createUser.newUser).to.be.an('object');
+        expect(result.data.createUser.newUser.id).to.be.an('string');
+
+        userId = result.data.createUser.newUser.id;
+        deleteUserVariables.input.id = userId;
+
+        // console.log(updateUserVariables);
+        return graphql(schema, deleteUserMutation, {}, {}, deleteUserVariables);
+      })
+      .then(result => {
+        // console.log(result);
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        expect(result.data.deleteUser).to.be.an('object');
+        expect(result.data.deleteUser.deletedUserId).to.be.a('string');
+        expect(result.data.deleteUser.deletedUserId).to.be.equal(deleteUserVariables.input.id);
         // expect(result.data.deleteUsers.nodes.length).to.be.equal(1);
         // expect(result.data.deleteUsers.nodes[0]).to.be.an('object');
         // expect(result.data.deleteUsers.nodes[0].newUser).to.be.an('object');
