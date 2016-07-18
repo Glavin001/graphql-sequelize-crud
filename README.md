@@ -69,8 +69,8 @@ app.listen(port, () => {
 - [x] Generate Queries
   - [x] READ single
   - [x] READ all
-- [ ] Generate Mutations
+- [x] Generate Mutations
   - [x] CREATE
   - [x] UPDATE
-  - [ ] DELETE
+  - [x] DELETE
 - [x] Custom queries and mutations within Sequelize Models defitions
