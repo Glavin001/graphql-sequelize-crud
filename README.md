@@ -30,6 +30,7 @@ See [`demo/index.js`](https://github.com/Glavin001/graphql-sequelize-crud/blob/m
 ```javascript
 // Project Dependencies.
 const Sequelize = require('sequelize');
+const { getSchema } = require('graphql-sequelize-crud');
 
 // Optional: Use express-graphql.
 const express = require('express');
