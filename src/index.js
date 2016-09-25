@@ -106,7 +106,13 @@ function convertFieldsFromGlobalId(Model, data) {
     let attr = Model.rawAttributes[k];
     if (attr.references || attr.primaryKey) {
       let {id} = fromGlobalId(data[k]);
-      data[k] = parseInt(id);
+
+      // Check if id is numeric.
+      if(!_.isNaN(_.toNumber(id))) {
+          data[k] = parseInt(id);
+      } else {
+          data[k] = id;
+      }
     }
   });
 }
