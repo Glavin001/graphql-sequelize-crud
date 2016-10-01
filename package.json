@@ -48,7 +48,7 @@
     "express-graphql": "^0.5.3",
     "graphql": "^0.6.0",
     "graphql-relay": "^0.4.2",
-    "graphql-sequelize": "^3.0.0",
+    "graphql-sequelize": "^3.0.0-0",
     "graphqlviz": "^1.1.0",
     "mocha": "^2.5.3",
     "mysql": "^2.11.1",
