@@ -155,7 +155,6 @@ function _createRecord({
         description: `The new ${Model.name}, if successfully created.`,
         resolve: (args,e,context,info) => {
           return resolver(Model, {
-            include: false
           })({}, {
             [Model.primaryKeyAttribute]: args[Model.primaryKeyAttribute]
           }, context, info);
@@ -199,7 +198,6 @@ function _createRecord({
             type: toType,
             resolve: (args,e,context,info) => {
               return resolver(Models[toType.name], {
-                include: false
               })({}, { id: args[foreignKey] }, context, info);
             }
           };
@@ -226,7 +224,6 @@ function _findRecord({
     type: modelType,
     args: defaultArgs(Model),
     resolve: resolver(Model, {
-      include: false // disable auto including of associations based on AST - default: true
     })
   };
 }
@@ -299,7 +296,6 @@ function _updateRecords({
         description: `The new ${Model.name}, if successfully created.`,
         resolve: (args,e,context,info) => {
           return resolver(Model, {
-            include: false
           })({}, {
             [Model.primaryKeyAttribute]: args[Model.primaryKeyAttribute]
           }, context, info);
@@ -340,7 +336,6 @@ function _updateRecords({
             type: toType,
             resolve: (args,e,context,info) => {
               return resolver(Models[toType.name], {
-                include: false
               })({}, { id: args[foreignKey] }, context, info);
             }
           };
@@ -436,7 +431,6 @@ function _updateRecord({
         description: `The new ${Model.name}, if successfully created.`,
         resolve: (args,e,context,info) => {
           return resolver(Model, {
-            include: false
           })({}, {
             [Model.primaryKeyAttribute]: args[Model.primaryKeyAttribute]
           }, context, info);
@@ -477,7 +471,6 @@ function _updateRecord({
             type: toType,
             resolve: (args,e,context,info) => {
               return resolver(Models[toType.name], {
-                include: false
               })({}, { id: args[foreignKey] }, context, info);
             }
           };
