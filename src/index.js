@@ -133,6 +133,7 @@ function _createRecord({
     description: `Create ${Model.name} record.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
+        exclude: Model.excludeFields ? Model.excludeFields : [],
         commentToDescription: true,
         // exclude: [Model.primaryKeyAttribute],
         cache
@@ -257,6 +258,7 @@ function _updateRecords({
     description: `Update multiple ${Model.name} records.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
+        exclude: Model.excludeFields ? Model.excludeFields : [],
         commentToDescription: true,
         allowNull: true,
         cache
@@ -400,6 +402,7 @@ function _updateRecord({
     description: `Update a single ${Model.name} record.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
+        exclude: Model.excludeFields ? Model.excludeFields : [],
         commentToDescription: true,
         allowNull: true,
         cache
@@ -526,6 +529,7 @@ function _deleteRecords({
     description: `Delete ${Model.name} records.`,
     inputFields: () => {
       let fields = attributeFields(Model, {
+        exclude: Model.excludeFields ? Model.excludeFields : [],
         commentToDescription: true,
         allowNull: true,
         cache
@@ -656,6 +660,7 @@ function getSchema(sequelize) {
         },
           // Attribute fields
           attributeFields(Model, {
+            exclude: Model.excludeFields ? Model.excludeFields : [],
             globalId: true,
             commentToDescription: true,
             cache
@@ -771,6 +776,7 @@ function getSchema(sequelize) {
           let aModel = association.through.model;
           // console.log('BelongsToMany model', aModel);
           edgeFields = attributeFields(aModel, {
+            exclude: aModel.excludeFields ? aModel.excludeFields : [],
             globalId: true,
             commentToDescription: true,
             cache
