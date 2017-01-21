@@ -82,7 +82,7 @@ Todo.belongsToMany(User, {
 });
 
 sequelize.sync({
-  false: true
+  force: true
 })
 .then(() => {
 
