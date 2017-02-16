@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "prepublish": "npm run build",
+    "preinstall": "npm run build",
     "test": "mocha --compilers js:babel-core/register",
     "build": "rm -rf lib/* && babel src --ignore test --out-dir lib",
     "demo": "babel-node demo/",
@@ -48,7 +48,7 @@
     "express-graphql": "^0.5.3",
     "graphql": "^0.6.0",
     "graphql-relay": "^0.4.2",
-    "graphql-sequelize": "^2.1.2",
+    "graphql-sequelize": "^3.0.0-0",
     "graphqlviz": "^1.1.0",
     "mocha": "^2.5.3",
     "mysql": "^2.11.1",
