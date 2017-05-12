@@ -570,6 +570,36 @@ function _deleteRecords({
 
 }
 
+function _countAll({ queries, Model, modelType }) {
+  let countAllQueryName = camelcase(Model.name + "Count");
+  const { where, include } = defaultListArgs(Model);
+  queries[countAllQueryName] = {
+    type: GraphQLInt,
+    args: {
+      where,
+      include
+    },
+    resolve: function(source, args, context, info) {
+      var findOptions = {};
+      findOptions = argsToFindOptions.default(args, []);
+      if (findOptions.include) {
+        _.each(findOptions.include, function(includeObj) {
+          var association =
+            Model.associations[
+              includeObj.model.toLowerCase
+                ? includeObj.model.toLowerCase()
+                : includeObj.model.name
+            ];
+          includeObj.model = association.target;
+          includeObj.as = association.as;
+        });
+        findOptions.include = _.toArray(findOptions.include);
+      }
+      return Model.count(findOptions);
+    }
+  };
+}
+
 
 function _deleteRecord({
   mutations,
@@ -737,6 +767,12 @@ function getSchema(sequelize) {
       associationsToModel,
       associationsFromModel,
       cache
+    });
+
+    _countAll({
+      queries,
+      Model,
+      modelType
     });
 
 
