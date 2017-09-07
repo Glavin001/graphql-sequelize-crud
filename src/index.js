@@ -105,7 +105,7 @@ function convertFieldsFromGlobalId(Model, data) {
     // Check if reference attribute
     let attr = Model.rawAttributes[k];
     if (attr.references || attr.primaryKey) {
-      let id = data[k];
+      let id = (data[k] !== null && typeof data[k] === 'object')?fromGlobalId(data[k]).id:data[k];
 
       // Check if id is numeric.
       if(!_.isNaN(_.toNumber(id))) {
