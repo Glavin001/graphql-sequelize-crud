@@ -1,18 +1,18 @@
 'use strict';
 
-var expect = require('chai').expect;
-const {
+import { expect } from 'chai';
+import {
   graphql,
   GraphQLSchema
-} = require('graphql');
-const {
+} from 'graphql';
+import {
   getSchema
-} = require('../src');
-const Sequelize = require('sequelize');
+} from '../src';
+import * as Sequelize from 'sequelize';
 
 describe('getSchema', function() {
 
-  var rand, sequelize, User, Todo, TodoAssignee;
+  let rand: any, sequelize: any, User, Todo, TodoAssignee;
 
   before(function(cb) {
 
@@ -93,7 +93,7 @@ describe('getSchema', function() {
 
   beforeEach(function(cb) {
 
-    rand = parseInt(Math.random()*1000000000);
+    rand = parseInt(`${Math.random()*1000000000}`);
 
     sequelize.sync({
       force: true
@@ -107,25 +107,25 @@ describe('getSchema', function() {
 
   it('should return GraphQL Schema', function() {
 
-    var schema = getSchema(sequelize);
+    const schema = getSchema(sequelize);
     // console.log(Object.keys(schema));
     // console.log(Object.keys(schema._queryType._fields));
     // console.log(Object.keys(schema._mutationType._fields));
 
     expect(schema).to.be.an.instanceof(GraphQLSchema);
     expect(schema).to.be.an('object');
-    expect(schema._queryType).to.be.an('object');
-    expect(schema._queryType._fields).to.be.an('object');
-    expect(Object.keys(schema._queryType._fields)).to.deep.equal([
+    expect((<any> schema)._queryType).to.be.an('object');
+    expect((<any> schema)._queryType._fields).to.be.an('object');
+    expect(Object.keys((<any> schema)._queryType._fields)).to.deep.equal([
       'root',
       'user', 'users',
       'todo', 'todos',
       'todoAssignee', 'todoAssignees',
       'node'
     ]);
-    expect(schema._mutationType).to.be.an('object');
-    expect(schema._mutationType._fields).to.be.an('object');
-    expect(Object.keys(schema._mutationType._fields)).to.deep.equal([
+    expect((<any> schema)._mutationType).to.be.an('object');
+    expect((<any> schema)._mutationType._fields).to.be.an('object');
+    expect(Object.keys((<any> schema)._mutationType._fields)).to.deep.equal([
       'createUser', 'updateUser', 'updateUsers', 'deleteUser', 'deleteUsers',
       'createTodo', 'updateTodo', 'updateTodos', 'deleteTodo', 'deleteTodos',
       'createTodoAssignee', 'updateTodoAssignee', 'updateTodoAssignees', 'deleteTodoAssignee', 'deleteTodoAssignees'
@@ -159,15 +159,15 @@ describe('getSchema', function() {
       "input": {
         "text": "Something",
         "completed": false,
-        // userId,
+        "userId": undefined as undefined | string,
         "clientMutationId": "test"
       }
     };
     let createTodoAssigneeVariables1 = {
       "input": {
         "primary": true,
-        // "UserId": userId,
-        // "TodoId": todoId,
+        "UserId": undefined as string | undefined,
+        "TodoId": undefined as string | undefined,
         "clientMutationId": "test"
       }
     };
@@ -179,7 +179,7 @@ describe('getSchema', function() {
     //     "clientMutationId": "yo"
     //   }
     // };
-    let userId, todoId;
+    let userId: string, todoId: string;
 
     return graphql(schema, createUserMutation, {}, {}, createUserVariables)
       .then(result => {
@@ -368,6 +368,7 @@ describe('getSchema', function() {
     `;
     let updateUserVariables = {
       "input": {
+        "id": undefined as string | undefined,
         "values": {
           "email": `testuser${rand+1}@web.com`,
           "password": `password${rand-1}`,
@@ -458,7 +459,7 @@ describe('getSchema', function() {
           "email": `testuser${rand+1}@web.com`,
           "password": `password${rand+1}`,
         },
-        "where": {},
+        "where": {} as any,
         "clientMutationId": "test"
       }
     };
@@ -536,7 +537,7 @@ describe('getSchema', function() {
     `;
     let deleteUsersVariables = {
       "input": {
-        "where": {},
+        "where": {} as any,
         "clientMutationId": "test"
       }
     };
@@ -615,7 +616,8 @@ describe('getSchema', function() {
     `;
     let deleteUserVariables = {
       "input": {
-        "clientMutationId": "test"
+        "clientMutationId": "test",
+        "id": undefined as string | undefined
       }
     };
 

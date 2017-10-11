@@ -1,11 +1,11 @@
 'use strict';
 
-const {
+import {
   getSchema
-} = require('../src');
-const Sequelize = require('sequelize');
-const express = require('express');
-const graphqlHTTP = require('express-graphql');
+} from '../src';
+import * as Sequelize from 'sequelize';
+import * as express from 'express';
+import * as graphqlHTTP from 'express-graphql';
 
 const app = express();
 const sequelize = new Sequelize('database', 'username', 'password', {

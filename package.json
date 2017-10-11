@@ -7,10 +7,13 @@
     "test": "test"
   },
   "scripts": {
-    "prepublish": "npm run build",
-    "test": "mocha --compilers js:babel-core/register",
-    "build": "rm -rf lib/* && babel src --ignore test --out-dir lib",
-    "demo": "babel-node demo/",
+    "prepublishOnly": "npm run build",
+    "dev": "tsc --watch",
+    "compile": "tsc",
+    "test": "mocha dist/test",
+    "build": "npm run clean && npm run compile",
+    "clean": "rm -rf dist/*",
+    "demo": "node dist/demo/",
     "viz": "echo \"Make sure server is started.\"; graphqlviz http://localhost:3000/graphql | dot -Tpng -o graph.png"
   },
   "repository": {
@@ -38,6 +41,16 @@
   },
   "homepage": "https://github.com/Glavin001/graphql-sequelize-crud#readme",
   "devDependencies": {
+    "@types/camelcase": "^4.1.0",
+    "@types/chai": "^4.0.4",
+    "@types/express": "^4.0.37",
+    "@types/express-graphql": "^0.0.34",
+    "@types/graphql": "^0.11.5",
+    "@types/graphql-relay": "^0.4.2",
+    "@types/lodash": "^4.14.77",
+    "@types/mocha": "^2.2.43",
+    "@types/pluralize": "^0.0.27",
+    "@types/sequelize": "^4.0.76",
     "babel-cli": "^6.10.1",
     "babel-core": "^6.10.4",
     "babel-plugin-transform-es2015-destructuring": "^6.9.0",
@@ -53,7 +66,8 @@
     "mocha": "^2.5.3",
     "mysql": "^2.11.1",
     "sequelize": "^3.23.4",
-    "sqlite3": "^3.1.4"
+    "sqlite3": "^3.1.13",
+    "typescript": "^2.5.3"
   },
   "dependencies": {
     "bluebird": "^3.4.1",
