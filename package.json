@@ -11,6 +11,7 @@
     "dev": "tsc --watch",
     "compile": "tsc",
     "test": "mocha dist/test",
+    "coverage": "nyc --extension '.ts' --reporter html --reporter lcov --reporter text --reporter teamcity npm run test",
     "build": "npm run clean && npm run compile",
     "clean": "rm -rf dist/*",
     "demo": "node dist/demo/",
@@ -65,6 +66,7 @@
     "graphqlviz": "^1.1.0",
     "mocha": "^2.5.3",
     "mysql": "^2.11.1",
+    "nyc": "^11.2.1",
     "sequelize": "^3.23.4",
     "sqlite3": "^3.1.13",
     "typescript": "^2.5.3"
