@@ -1,11 +1,21 @@
 'use strict';
 
 import {
-  getSchema
-} from '../src';
+  graphql,
+  GraphQLSchema,
+  GraphQLString,
+  GraphQLNonNull,
+  GraphQLObjectType,
+} from 'graphql';
 import * as Sequelize from 'sequelize';
 import * as express from 'express';
 import * as graphqlHTTP from 'express-graphql';
+import { ModelsHashInterface as Models } from "sequelize";
+import { resolver } from "graphql-sequelize";
+import {
+  getSchema,
+  IModelTypes,
+} from '../src';
 
 const app = express();
 const sequelize = new Sequelize('database', 'username', 'password', {
@@ -32,8 +42,45 @@ const User = sequelize.define('User', {
     allowNull: false
   }
 }, {
-  timestamps: true
-});
+    timestamps: true,
+    classMethods: {
+      queries: function () {
+        return {};
+      },
+      mutations: (Models: Models, ModelTypes: IModelTypes, resolver: Function) => {
+        return {
+          createCustom: {
+            type: new GraphQLObjectType({
+              name: "Custom",
+              description: "Custom type for custom mutation",
+              fields: () => ({
+                customValueA: {
+                  type: GraphQLString,
+                },
+                customValueB: {
+                  type: GraphQLString,
+                },
+              })
+            }),
+            args: {
+              dataA: {
+                type: new GraphQLNonNull(GraphQLString)
+              },
+              dataB: {
+                type: new GraphQLNonNull(GraphQLString)
+              }
+            },
+            resolve: (obj: any, { dataA, dataB }: any) => {
+              return Promise.resolve({
+                "customValueA": dataA,
+                "customValueB": dataB,
+              });
+            }
+          }
+        };
+      }
+    }
+  });
 const Todo = sequelize.define('Todo', {
   id: {
     type: Sequelize.INTEGER,
@@ -50,16 +97,16 @@ const Todo = sequelize.define('Todo', {
     allowNull: false
   }
 }, {
-  timestamps: true
-});
+    timestamps: true
+  });
 
 const TodoAssignee = sequelize.define('TodoAssignee', {
   primary: {
     type: Sequelize.BOOLEAN
   }
 }, {
-  timestamps: true
-});
+    timestamps: true
+  });
 
 
 User.hasMany(Todo, {
@@ -84,18 +131,18 @@ Todo.belongsToMany(User, {
 sequelize.sync({
   force: true
 })
-.then(() => {
+  .then(() => {
 
-  const schema = getSchema(sequelize);
+    const schema = getSchema(sequelize);
 
-  app.use('/graphql', graphqlHTTP({
-    schema: schema,
-    graphiql: true
-  }));
+    app.use('/graphql', graphqlHTTP({
+      schema: schema,
+      graphiql: true
+    }));
 
-  const port = 3000;
-  app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
+    const port = 3000;
+    app.listen(port, () => {
+      console.log(`Listening on port ${port}`);
+    });
+
   });
-
-});

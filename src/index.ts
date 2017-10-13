@@ -224,9 +224,8 @@ function _createRecord({
           output[field] = {
             type: toType,
             resolve: (args: any, e: any, context: any, info: any) => {
-              console.log('Models', Models, Models[toType.name]);
-              return resolver(Models[toType.name], {
-              })({}, { id: args[foreignKey] }, context, info);
+              // console.log('Models', Models, Models[toType.name]);
+              return resolver(Models[toType.name], {})({}, { id: args[foreignKey] }, context, info);
             }
           };
         }
@@ -503,7 +502,7 @@ function _updateRecord({
           output[field] = {
             type: toType,
             resolve: (args, e, context, info) => {
-              console.log('Models', Models, Models[toType.name]);
+              // console.log('Models', Models, Models[toType.name]);
               return resolver(Models[toType.name], {
               })({}, { id: args[foreignKey] }, context, info);
             }
@@ -648,7 +647,7 @@ function _deleteRecord({
 
 }
 
-interface IModelTypes {
+export interface IModelTypes {
   [tableName: string]: GraphQLObjectType | SequelizeConnection;
 }
 
