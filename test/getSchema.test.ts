@@ -38,10 +38,17 @@ describe('getSchema', function() {
       password: {
         type: Sequelize.STRING,
         allowNull: false
+      },
+      excludedField: {
+        type: Sequelize.STRING,
+        allowNull: true
       }
     }, {
       timestamps: false
     });
+
+    sequelize.models.User.excludeFields = ['excludedField'];
+
     Todo = sequelize.define('Todo', {
       id: {
         type: Sequelize.INTEGER,
@@ -664,5 +671,43 @@ describe('getSchema', function() {
 
   });
 
+  it('should fail to create user with excluded field', function(cb) {
+
+        var schema = getSchema(sequelize);
+
+        let createUserMutation = `
+          mutation createUserTest($input: createUserInput!) {
+            createUser(input: $input) {
+              newUser {
+                id
+                email
+                password
+              }
+            }
+          }
+        `;
+        let createUserVariables = {
+          "input": {
+            "email": `testuser${rand}@web.com`,
+            "password": `password${rand}`,
+            "excludedField": `excluded${rand}`,
+            "clientMutationId": "test"
+          }
+        };
+
+        return graphql(schema, createUserMutation, {}, {}, createUserVariables)
+          .then(result => {
+            const { errors } = result;
+            expect(errors).to.be.length(1);
+            const error = errors[0];
+            expect(error).to.be.an('error');
+            expect(error.message).to.contain('excludedField');
+            cb();
+          })
+          .catch((error: Error) => {
+            cb(error);
+          });
+
+        });
 
 });
