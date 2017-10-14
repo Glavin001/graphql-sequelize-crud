@@ -20,6 +20,7 @@ import {
     attributeFields,
     resolver,
     SequelizeConnection,
+    Cache,
 } from "graphql-sequelize";
 import {
     convertFieldsFromGlobalId,
@@ -32,7 +33,7 @@ import {
     Model,
     ModelsHashInterface as Models,
     ModelTypes,
-} from "graphql-sequelize-crud";
+} from "./types";
 
 export class OperationFactory {
 
@@ -76,7 +77,6 @@ export class OperationFactory {
                 const fields = attributeFields(model, {
                     exclude,
                     commentToDescription: true,
-                    // exclude: [Model.primaryKeyAttribute],
                     cache
                 }) as GraphQLInputFieldConfigMap;
 
@@ -633,8 +633,4 @@ export interface OperationFactoryConfig {
     associationsToModel: AssociationToModels;
     associationsFromModel: AssociationFromModels;
     cache: Cache;
-}
-
-export interface Cache {
-    [modelName: string]: GraphQLObjectType | GraphQLInputObjectType;
 }

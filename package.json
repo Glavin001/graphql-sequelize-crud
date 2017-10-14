@@ -24,7 +24,8 @@
     "demo": "node dist/demo/",
     "viz": "echo \"Make sure server is started.\"; graphqlviz http://localhost:3000/graphql | dot -Tpng -o graph.png",
     "lint": "tslint --config tslint.json \"{src,test}/**/*.{ts,tsx}\"",
-    "lint-fix": "tslint --fix --config tslint.json \"{src,test}/**/*.{ts,tsx}\""
+    "lint-fix": "tslint --fix --config tslint.json \"{src,test}/**/*.{ts,tsx}\"",
+    "all": "npm run build && npm test && npm run lint"
   },
   "repository": {
     "type": "git",

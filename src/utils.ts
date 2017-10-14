@@ -12,7 +12,7 @@ import {
 } from "graphql-relay";
 import {
     Model,
-} from "graphql-sequelize-crud";
+} from "./types";
 
 // tslint:disable-next-line:no-reserved-keywords
 export function mutationName(model: Model, type: string) {

@@ -1,8 +1,19 @@
 // tslint:disable no-duplicate-imports
-declare module "graphql-sequelize-crud" {
-    import { GraphQLObjectType } from "graphql";
+declare module "graphql-sequelize" {
+
+    import {
+        GraphQLFieldResolver,
+        GraphQLFieldConfigArgumentMap,
+        GraphQLFieldConfig,
+        GraphQLFieldConfigMap,
+        GraphQLInputFieldConfigMap,
+        GraphQLObjectType,
+        GraphQLInputObjectType,
+    } from "graphql";
+    import { ConnectionConfig } from "graphql-relay";
+    import { Sequelize } from "sequelize";
     import { Model as SequelizeModel } from "sequelize";
-    import { SequelizeConnection} from "graphql-sequelize";
+    import { SequelizeConnection } from "graphql-sequelize";
 
     export interface Model extends SequelizeModel<any, any> {
         associations: {
@@ -37,34 +48,35 @@ declare module "graphql-sequelize-crud" {
         [tableName: string]: GraphQLObjectType | SequelizeConnection;
     }
 
-}
-
-declare module "graphql-sequelize" {
-
-    import {
-        GraphQLFieldResolver,
-        GraphQLFieldConfigArgumentMap,
-        GraphQLFieldConfig,
-        GraphQLFieldConfigMap,
-        GraphQLInputFieldConfigMap,
-    } from "graphql";
-    import { ConnectionConfig } from "graphql-relay";
-    import { Sequelize } from "sequelize";
-    import { Model, Association } from "graphql-sequelize-crud";
-
     export function defaultArgs(model: Model): GraphQLFieldConfigArgumentMap;
 
     export function defaultListArgs(model: Model):
         GraphQLFieldConfigArgumentMap & { limit: any; order: any; where: any; };
 
     export interface AttributeFieldsOptions {
-        exclude?: any[]; // array of model attributes to ignore - default: []
-        only?: any[]; // only generate definitions for these model attributes - default: null
-        globalId?: boolean; // return an relay global id field - default: false
-        map?: object; // rename fields - default: {}
-        allowNull?: boolean; // disable wrapping mandatory fields in `GraphQLNonNull` - default: false
-        commentToDescription?: boolean; // convert model comment to GraphQL description - default: false
-        cache?: object; // Cache enum types to prevent duplicate type name error - default: {}
+        // array of model attributes to ignore - default: []
+        exclude?: string[];
+        // only generate definitions for these model attributes - default: null
+        only?: string[];
+        // return an relay global id field - default: false
+        globalId?: boolean;
+        // rename fields - default: {}
+        map?: AttributesMap | AttributesMapFn;
+        // disable wrapping mandatory fields in `GraphQLNonNull` - default: false
+        allowNull?: boolean;
+        // convert model comment to GraphQL description - default: false
+        commentToDescription?: boolean;
+        // Cache enum types to prevent duplicate type name error - default: {}
+        cache?: Cache;
+    }
+
+    export interface AttributesMap {
+        [originalKey: string]: string;
+    }
+    export type AttributesMapFn = (originalKey: string) => string;
+
+    export interface Cache {
+        [modelName: string]: GraphQLObjectType | GraphQLInputObjectType;
     }
 
     export function attributeFields(model: Model, options?: AttributeFieldsOptions): AttributeFields;
@@ -118,15 +130,3 @@ declare module "graphql-sequelize" {
 declare module "graphql-sequelize/lib/types/jsonType" {
 
 }
-
-// declare namespace sequelize {
-//     export interface Hooks<TInstance> {
-
-//     }
-//     export interface Associations {
-
-//     }
-//     export interface Model<TInstance, TAttributes> extends Hooks<TInstance>, Associations {
-//         name: string;
-//     }
-// }

@@ -12,6 +12,7 @@ import {
     attributeFields,
     resolver,
     relay,
+    Cache,
 } from "graphql-sequelize";
 const {
     sequelizeNodeInterface,
@@ -25,14 +26,13 @@ import {
     ModelsHashInterface as Models,
     Association,
     ModelTypes,
-} from "graphql-sequelize-crud";
+} from "./types";
 import {
     OperationFactory,
     AssociationToModels,
     AssociationFromModels,
     Queries,
     Mutations,
-    Cache,
 } from "./OperationFactory";
 import {
     getTableName,
