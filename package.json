@@ -2,10 +2,16 @@
   "name": "graphql-sequelize-crud",
   "version": "0.3.0",
   "description": "Automatically generate queries and mutations from Sequelize models",
-  "main": "lib/index.js",
+  "main": "./dist/src/index.js",
+  "types": "./dist/src/index.d.ts",
   "directories": {
-    "test": "test"
+    "test": "test",
+    "lib": "dist",
+    "example": "demo"
   },
+  "files": [
+    "dist/src"
+  ],
   "scripts": {
     "prepublishOnly": "npm run build",
     "dev": "tsc --watch",
