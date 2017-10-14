@@ -1,8 +1,6 @@
 'use strict';
 
 import {
-  graphql,
-  GraphQLSchema,
   GraphQLString,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -12,7 +10,6 @@ import { ModelsHashInterface as Models } from "sequelize";
 import * as Sequelize from 'sequelize';
 import * as express from 'express';
 import * as graphqlHTTP from 'express-graphql';
-import { resolver } from "graphql-sequelize";
 import {
   getSchema,
   ModelTypes,

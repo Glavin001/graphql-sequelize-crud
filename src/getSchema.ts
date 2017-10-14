@@ -2,49 +2,37 @@ import {
     GraphQLObjectType,
     GraphQLSchema,
     GraphQLInt,
-    GraphQLString,
-    GraphQLList,
     GraphQLNonNull,
-    GraphQLBoolean,
-    GraphQLInputObjectType,
-    GraphQLID,
     GraphQLFieldConfigMap,
     GraphQLFieldResolver,
 } from 'graphql';
 import * as _ from 'lodash';
-import * as pluralize from 'pluralize';
-import * as camelcase from 'camelcase';
 
 import {
-    fromGlobalId,
-    globalIdField,
-    mutationWithClientMutationId
-} from "graphql-relay";
-
-import {
-    defaultArgs,
-    defaultListArgs,
     attributeFields,
     resolver,
     relay,
-    SequelizeConnection,
 } from "graphql-sequelize";
 const {
     sequelizeNodeInterface,
     sequelizeConnection
 } = relay;
 
-import { Sequelize, Model as SequelizeModel } from "sequelize";
-
-import * as jsonType from "graphql-sequelize/lib/types/jsonType";
+import { Sequelize } from "sequelize";
 
 import {
-    OperationFactory,
+    Model,
+    ModelsHashInterface as Models,
+    Association,
     ModelTypes,
+} from "graphql-sequelize-crud";
+import {
+    OperationFactory,
     AssociationToModels,
     AssociationFromModels,
     Queries,
-    Model,
+    Mutations,
+    Cache,
 } from "./OperationFactory";
 import {
     getTableName,
@@ -55,12 +43,12 @@ export function getSchema(sequelize: Sequelize) {
 
     const { nodeInterface, nodeField, nodeTypeMapper } = sequelizeNodeInterface(sequelize);
 
-    const models = sequelize.models;
+    const models: Models = sequelize.models as any;
     const queries: Queries = {};
-    const mutations: any = {};
+    const mutations: Mutations = {};
     const associationsToModel: AssociationToModels = {};
     const associationsFromModel: AssociationFromModels = {};
-    const cache: any = {};
+    const cache: Cache = {};
 
     // Create types map
     const modelTypes: ModelTypes = Object.keys(models).reduce((types: ModelTypes, key: string) => {
@@ -68,6 +56,13 @@ export function getSchema(sequelize: Sequelize) {
         const modelType = new GraphQLObjectType({
             name: getTableName(model),
             fields: () => {
+                // Attribute fields
+                const defaultFields = attributeFields(model, {
+                    exclude: model.excludeFields ? model.excludeFields : [],
+                    globalId: true,
+                    commentToDescription: true,
+                    cache
+                }) as GraphQLFieldConfigMap<any, any>;
                 // Lazily load fields
                 return Object.keys(model.associations)
                     .reduce((fields: GraphQLFieldConfigMap<any, any>, akey: string) => {
@@ -92,15 +87,7 @@ export function getSchema(sequelize: Sequelize) {
                             };
                         }
                         return fields;
-                    },
-                    // Attribute fields
-                    attributeFields(model, {
-                        exclude: model.excludeFields ? model.excludeFields : [],
-                        globalId: true,
-                        commentToDescription: true,
-                        cache
-                    })
-                    );
+                    }, defaultFields);
             },
             interfaces: [nodeInterface]
         });
@@ -193,7 +180,7 @@ export function getSchema(sequelize: Sequelize) {
                 });
             } else {
                 // HasMany
-                let edgeFields = {};
+                let edgeFields: GraphQLFieldConfigMap<any, any> = {};
                 if (atype === "BelongsToMany") {
                     const aModel = association.through.model;
                     // console.log('BelongsToMany model', aModel);
@@ -202,10 +189,10 @@ export function getSchema(sequelize: Sequelize) {
                         globalId: true,
                         commentToDescription: true,
                         cache
-                    });
+                    }) as GraphQLFieldConfigMap<any, any>;
                     // Pass Through model to resolve function
-                    _.each(edgeFields, (edgeField: any, field: string) => {
-                        const oldResolve: GraphQLFieldResolver<any, any> = edgeField.resolve;
+                    _.each(edgeFields, (edgeField: GraphQLFieldConfigMap<any, any>, field: string) => {
+                        const oldResolve = edgeField.resolve;
                         // console.log(field, edgeField, Object.keys(edgeField));
                         if (typeof oldResolve !== 'function') {
                             // console.log(oldResolve);
@@ -234,7 +221,7 @@ export function getSchema(sequelize: Sequelize) {
                         total: {
                             type: new GraphQLNonNull(GraphQLInt),
                             description:
-                                `Total count of ${targetType.name} results associated with ${getTableName(model)}.`,
+                            `Total count of ${targetType.name} results associated with ${getTableName(model)}.`,
                             resolve: ({ source }: any) => {
                                 const { accessors } = association;
                                 return source[accessors.count]();
@@ -267,7 +254,7 @@ export function getSchema(sequelize: Sequelize) {
 
     // Custom Queries and Mutations
     _.each(Object.keys(models), (key) => {
-        const model: any = models[key];
+        const model = models[key];
 
         // Custom Queries
         if (model.queries) {
@@ -302,9 +289,9 @@ export function getSchema(sequelize: Sequelize) {
 
     const mutationRoot = new GraphQLObjectType({
         name: "Mutations",
-        fields: {
+        fields: () => ({
             ...mutations
-        }
+        })
     });
 
     return new GraphQLSchema({
@@ -312,19 +299,4 @@ export function getSchema(sequelize: Sequelize) {
         mutation: mutationRoot
     });
 
-}
-
-export interface Association {
-    associationType: string;
-    target: {
-        name: string;
-    };
-    foreignKey: string;
-    as: string;
-    through: {
-        model: Model;
-    };
-    accessors: {
-        count: any;
-    };
 }

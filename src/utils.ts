@@ -2,25 +2,17 @@ import * as _ from 'lodash';
 import * as camelcase from 'camelcase';
 import * as pluralize from 'pluralize';
 import {
-    GraphQLObjectType,
-    GraphQLSchema,
-    GraphQLInt,
-    GraphQLString,
-    GraphQLList,
-    GraphQLNonNull,
-    GraphQLBoolean,
-    GraphQLInputObjectType,
     GraphQLID,
     GraphQLFieldConfigMap,
-    GraphQLFieldResolver,
+    GraphQLInputFieldConfigMap,
 } from 'graphql';
 import {
     fromGlobalId,
     globalIdField,
-    mutationWithClientMutationId
 } from "graphql-relay";
-
-import { Model } from "./OperationFactory";
+import {
+    Model,
+} from "graphql-sequelize-crud";
 
 // tslint:disable-next-line:no-reserved-keywords
 export function mutationName(model: Model, type: string) {
@@ -55,7 +47,10 @@ export function convertFieldsFromGlobalId(model: Model, data: { [key: string]: a
             return;
         }
         // Check if reference attribute
-        const attr: any = rawAttributes[key];
+        const attr = rawAttributes[key];
+        if (!attr) {
+            return;
+        }
         if (attr.references || attr.primaryKey) {
             const { id } = fromGlobalId(data[key]);
 
@@ -69,7 +64,10 @@ export function convertFieldsFromGlobalId(model: Model, data: { [key: string]: a
     });
 }
 
-export function convertFieldsToGlobalId(model: Model, fields: Fields) {
+export function convertFieldsToGlobalId(
+    model: Model,
+    fields: GraphQLFieldConfigMap<any, any> | GraphQLInputFieldConfigMap,
+) {
     // Fix Relay Global ID
     const rawAttributes = attributesForModel(model);
     _.each(Object.keys(rawAttributes), (key) => {
@@ -78,10 +76,12 @@ export function convertFieldsToGlobalId(model: Model, fields: Fields) {
         }
         // Check if reference attribute
         const attr = rawAttributes[key];
+        if (!attr) {
+            return;
+        }
         if (attr.references) {
             // console.log(`Replacing ${getTableName(Model)}'s field ${k} with globalIdField.`);
             const modelName = attr.references.model;
-            // let modelType = types[modelName];
             fields[key] = globalIdField(modelName);
         } else if (attr.primaryKey) {
             fields[key] = globalIdField(getTableName(model));
@@ -95,8 +95,19 @@ export function connectionNameForAssociation(model: Model, associationName: stri
     return camelcase(`${getTableName(model)}_${associationName}`);
 }
 
-export function attributesForModel(model: Model): { [key: string]: any; } {
-    return (<any>model).rawAttributes;
+export function attributesForModel(model: Model): RawAttributes {
+    return (<any> model).rawAttributes;
+}
+
+export interface RawAttributes {
+    [key: string]: RawAttribute | undefined;
+}
+
+export interface RawAttribute {
+    primaryKey: string;
+    references: {
+        model: string;
+    };
 }
 
 // tslint:disable-next-line:no-reserved-keywords
@@ -117,13 +128,4 @@ export function queryName(model: Model, type: string) {
 
 export function getTableName(model: Model): string {
     return (<any>model).name;
-    // const tableName = Model.getTableName();
-    // if (typeof tableName === "string") {
-    //   return tableName;
-    // }
-    // return (<any> tableName).tableName;
-}
-
-export interface Fields {
-    [key: string]: any;
 }

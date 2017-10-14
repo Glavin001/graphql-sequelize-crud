@@ -1,11 +1,61 @@
+// tslint:disable no-duplicate-imports
+declare module "graphql-sequelize-crud" {
+    import { GraphQLObjectType } from "graphql";
+    import { Model as SequelizeModel } from "sequelize";
+    import { SequelizeConnection} from "graphql-sequelize";
+
+    export interface Model extends SequelizeModel<any, any> {
+        associations: {
+            [associationKey: string]: Association;
+        };
+        excludeFields?: string[];
+        primaryKeyAttribute: string;
+        queries?(models: ModelsHashInterface, modelTypes: ModelTypes, resolver: any): any;
+        mutations?(models: ModelsHashInterface, modelTypes: ModelTypes, resolver: any): any;
+    }
+
+    export interface Association {
+        associationType: string;
+        target: {
+            name: string;
+        };
+        foreignKey: string;
+        as: string;
+        through: {
+            model: Model;
+        };
+        accessors: {
+            count: any;
+        };
+    }
+
+    export interface ModelsHashInterface {
+        [name: string]: Model;
+    }
+
+    export interface ModelTypes {
+        [tableName: string]: GraphQLObjectType | SequelizeConnection;
+    }
+
+}
+
 declare module "graphql-sequelize" {
 
-    import { GraphQLFieldResolver } from "graphql";
+    import {
+        GraphQLFieldResolver,
+        GraphQLFieldConfigArgumentMap,
+        GraphQLFieldConfig,
+        GraphQLFieldConfigMap,
+        GraphQLInputFieldConfigMap,
+    } from "graphql";
     import { ConnectionConfig } from "graphql-relay";
+    import { Sequelize } from "sequelize";
+    import { Model, Association } from "graphql-sequelize-crud";
 
-    export function defaultArgs(model: any): any;
+    export function defaultArgs(model: Model): GraphQLFieldConfigArgumentMap;
 
-    export function defaultListArgs(model: any): { limit: any; order: any; where: any; };
+    export function defaultListArgs(model: Model):
+        GraphQLFieldConfigArgumentMap & { limit: any; order: any; where: any; };
 
     export interface AttributeFieldsOptions {
         exclude?: any[]; // array of model attributes to ignore - default: []
@@ -17,31 +67,23 @@ declare module "graphql-sequelize" {
         cache?: object; // Cache enum types to prevent duplicate type name error - default: {}
     }
 
-    export function attributeFields(model: any, options?: AttributeFieldsOptions): any;
+    export function attributeFields(model: Model, options?: AttributeFieldsOptions): AttributeFields;
 
-    export function resolver(model: any, options?: {
+    export type AttributeFields = GraphQLFieldConfigMap<any, any> | GraphQLInputFieldConfigMap;
+
+    export function resolver(model: Model | Association, options?: {
         before?: Function;
         after?: Function;
         separate?: boolean;
     }): any;
 
-    function sequelizeNodeInterface(sequelize: any): {
+    function sequelizeNodeInterface(sequelize: Sequelize): {
         nodeInterface: any;
         nodeField: any;
         nodeTypeMapper: any;
     };
 
     function sequelizeConnection(): any;
-
-    // export declare const relay = {
-    //   sequelizeNodeInterface: sequelizeNodeInterface,
-    //   sequelizeConnection: sequelizeConnection
-    // };
-
-    // export {
-    //     sequelizeNodeInterface,
-    //     sequelizeConnection
-    //   } as relay;
 
     export interface SequelizeConnection {
         connectionType: any;
@@ -61,7 +103,7 @@ declare module "graphql-sequelize" {
     }
 
     interface Relay {
-        sequelizeNodeInterface(sequelize: any): {
+        sequelizeNodeInterface(sequelize: Sequelize): {
             nodeInterface: any;
             nodeField: any;
             nodeTypeMapper: any;

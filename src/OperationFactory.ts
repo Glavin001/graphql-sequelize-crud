@@ -1,21 +1,16 @@
 import {
     GraphQLObjectType,
-    GraphQLSchema,
     GraphQLInt,
-    GraphQLString,
     GraphQLList,
-    GraphQLNonNull,
-    GraphQLBoolean,
     GraphQLInputObjectType,
     GraphQLID,
     GraphQLFieldConfigMap,
-    GraphQLFieldResolver,
+    GraphQLFieldConfig,
+    GraphQLInputFieldConfigMap,
 } from 'graphql';
 import * as _ from 'lodash';
-import * as pluralize from 'pluralize';
 import * as camelcase from 'camelcase';
 import {
-    fromGlobalId,
     globalIdField,
     mutationWithClientMutationId
 } from "graphql-relay";
@@ -24,17 +19,8 @@ import {
     defaultListArgs,
     attributeFields,
     resolver,
-    relay,
     SequelizeConnection,
 } from "graphql-sequelize";
-const {
-    sequelizeNodeInterface,
-    sequelizeConnection
-  } = relay;
-import { Sequelize, Model as SequelizeModel, ModelsHashInterface as Models } from "sequelize";
-// export type Model = SequelizeModel<any, any>
-export type Model = any;
-import * as jsonType from "graphql-sequelize/lib/types/jsonType";
 import {
     convertFieldsFromGlobalId,
     mutationName,
@@ -42,6 +28,11 @@ import {
     convertFieldsToGlobalId,
     queryName,
 } from "./utils";
+import {
+    Model,
+    ModelsHashInterface as Models,
+    ModelTypes,
+} from "graphql-sequelize-crud";
 
 export class OperationFactory {
 
@@ -64,9 +55,9 @@ export class OperationFactory {
         model,
         modelType,
     }: {
-            mutations: any,
+            mutations: Mutations,
             model: Model,
-            modelType: any,
+            modelType: GraphQLObjectType,
         }) {
         const {
             models,
@@ -81,13 +72,13 @@ export class OperationFactory {
             name: createMutationName,
             description: `Create ${getTableName(model)} record.`,
             inputFields: () => {
-                const exclude: any[] = (<any>model).excludeFields ? (<any>model).excludeFields : [];
+                const exclude = model.excludeFields ? model.excludeFields : [];
                 const fields = attributeFields(model, {
                     exclude,
                     commentToDescription: true,
                     // exclude: [Model.primaryKeyAttribute],
                     cache
-                });
+                }) as GraphQLInputFieldConfigMap;
 
                 convertFieldsToGlobalId(model, fields);
 
@@ -174,16 +165,8 @@ export class OperationFactory {
     }: {
             queries: Queries;
             model: Model;
-            modelType: any;
+            modelType: GraphQLObjectType;
         }) {
-        const {
-            models,
-            modelTypes,
-            associationsToModel,
-            associationsFromModel,
-            cache,
-        } = this;
-
         const findByIdQueryName = queryName(model, 'findById');
         queries[findByIdQueryName] = {
             type: modelType,
@@ -199,17 +182,9 @@ export class OperationFactory {
         modelType
     }: {
             model: Model;
-            modelType: any;
+            modelType: GraphQLObjectType;
             queries: Queries;
         }) {
-        const {
-            models,
-            modelTypes,
-            associationsToModel,
-            associationsFromModel,
-            cache,
-        } = this;
-
         const findAllQueryName = queryName(model, 'findAll');
         queries[findAllQueryName] = {
             type: new GraphQLList(modelType),
@@ -223,9 +198,9 @@ export class OperationFactory {
         model,
         modelType,
     }: {
-            mutations: any,
+            mutations: Mutations,
             model: Model,
-            modelType: any,
+            modelType: GraphQLObjectType,
         }) {
         const {
             models,
@@ -245,7 +220,7 @@ export class OperationFactory {
                     commentToDescription: true,
                     allowNull: true,
                     cache
-                });
+                }) as GraphQLInputFieldConfigMap;
 
                 convertFieldsToGlobalId(model, fields);
 
@@ -362,7 +337,7 @@ export class OperationFactory {
                 return model.update(values, {
                     where
                 })
-                    .then((result: any[]) => {
+                    .then((result) => {
                         return {
                             where,
                             affectedCount: result[0]
@@ -378,9 +353,9 @@ export class OperationFactory {
         model,
         modelType,
     }: {
-            mutations: any,
+            mutations: Mutations,
             model: Model,
-            modelType: any,
+            modelType: GraphQLObjectType,
         }) {
         const {
             models,
@@ -400,7 +375,7 @@ export class OperationFactory {
                     commentToDescription: true,
                     allowNull: true,
                     cache
-                });
+                }) as GraphQLInputFieldConfigMap;
 
                 convertFieldsToGlobalId(model, fields);
 
@@ -499,7 +474,7 @@ export class OperationFactory {
                 return model.update(values, {
                     where
                 })
-                    .then((result: any) => {
+                    .then((result) => {
                         return where;
                     });
 
@@ -513,15 +488,11 @@ export class OperationFactory {
         model,
         modelType,
     }: {
-            mutations: any,
+            mutations: Mutations,
             model: Model,
-            modelType: any,
+            modelType: GraphQLObjectType,
         }) {
         const {
-            models,
-            modelTypes,
-            associationsToModel,
-            associationsFromModel,
             cache,
         } = this;
 
@@ -535,7 +506,7 @@ export class OperationFactory {
                     commentToDescription: true,
                     allowNull: true,
                     cache
-                });
+                }) as GraphQLInputFieldConfigMap;
                 convertFieldsToGlobalId(model, fields);
                 const deleteModelWhereType = new GraphQLInputObjectType({
                     name: `Delete${getTableName(model)}WhereInput`,
@@ -561,7 +532,7 @@ export class OperationFactory {
                 return model.destroy({
                     where
                 })
-                    .then((affectedCount: any[]) => {
+                    .then((affectedCount) => {
                         return {
                             where,
                             affectedCount
@@ -577,18 +548,10 @@ export class OperationFactory {
         model,
         modelType,
     }: {
-            mutations: any,
+            mutations: Mutations,
             model: Model,
-            modelType: any,
+            modelType: GraphQLObjectType,
         }) {
-        const {
-            models,
-            modelTypes,
-            associationsToModel,
-            associationsFromModel,
-            cache,
-        } = this;
-
         const deleteMutationName = mutationName(model, 'deleteOne');
         mutations[deleteMutationName] = mutationWithClientMutationId({
             name: deleteMutationName,
@@ -617,7 +580,7 @@ export class OperationFactory {
                 return model.destroy({
                     where
                 })
-                    .then((affectedCount: any[]) => {
+                    .then((affectedCount) => {
                         return data;
                     });
             }
@@ -656,36 +619,12 @@ export interface AssociationFromModels {
     };
 }
 
-export interface FindOperationOptions {
-    model: Model;
-    modelType: any;
-    queries: Queries;
-    Models: Sequelize["models"];
+export interface Queries extends GraphQLFieldConfigMap<any, any> {
+    [queryName: string]: GraphQLFieldConfig<any, any>;
 }
 
-export interface OperationOptions {
-    mutations: any;
-    model: Model;
-    modelType: any;
-    // modelTypes: any;
-    // associationsToModel: AssociationToModels;
-    // associationsFromModel: AssociationFromModels;
-    // cache: any;
-    // Models: Sequelize["models"];
-}
-
-export interface Queries {
-    [queryName: string]: Query;
-}
-
-export interface Query {
-    type: any;
-    args: any;
-    resolve: any;
-}
-
-export interface ModelTypes {
-    [tableName: string]: GraphQLObjectType | SequelizeConnection;
+export interface Mutations extends GraphQLFieldConfigMap<any, any> {
+    [mutationName: string]: GraphQLFieldConfig<any, any>;
 }
 
 export interface OperationFactoryConfig {

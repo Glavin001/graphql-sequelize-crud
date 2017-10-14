@@ -16,7 +16,6 @@ import {
 import * as Sequelize from 'sequelize';
 // tslint:disable-next-line:no-duplicate-imports
 import { Sequelize as SequelizeType, ModelsHashInterface as Models } from "sequelize";
-import { resolver } from "graphql-sequelize";
 
 describe('getSchema', () => {
 
@@ -99,7 +98,7 @@ describe('getSchema', () => {
         }
       });
 
-    (<any> sequelize.models.User).excludeFields = ['excludedField'];
+    (<any>sequelize.models.User).excludeFields = ['excludedField'];
 
     Todo = sequelize.define('Todo', {
       id: {
@@ -248,6 +247,9 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.errors).to.be.equal(undefined, `An error occurred: ${result.errors}`);
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
         expect(result.data.createUser.newUser.id).to.be.an('string');
@@ -285,6 +287,9 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.errors).to.be.equal(undefined, `An error occurred: ${result.errors}`);
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.createTodo).to.be.an('object');
         expect(result.data.createTodo.newTodo).to.be.an('object');
         expect(result.data.createTodo.newTodo.id).to.be.an('string');
@@ -317,6 +322,9 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.errors).to.be.equal(undefined, `An error occurred: ${result.errors}`);
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.createTodoAssignee).to.be.an('object');
         expect(result.data.createTodoAssignee.newTodoAssignee).to.be.an('object');
         expect(result.data.createTodoAssignee.newTodoAssignee.id).to.be.an('string');
@@ -373,6 +381,9 @@ describe('getSchema', () => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
 
         expect(result.data.todoAssignees).to.be.an('array');
         expect(result.data.todoAssignees[0].id).to.be.an('string');
@@ -464,6 +475,9 @@ describe('getSchema', () => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
         expect(result.data.createUser.newUser.id).to.be.an('string');
@@ -478,6 +492,9 @@ describe('getSchema', () => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.updateUser).to.be.an('object');
         expect(result.data.updateUser.newUser).to.be.an('object');
         expect(result.data.updateUser.newUser.id).to.be.an('string');
@@ -550,6 +567,9 @@ describe('getSchema', () => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
         expect(result.data.createUser.newUser.id).to.be.an('string');
@@ -564,6 +584,9 @@ describe('getSchema', () => {
         // console.log(result, JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.updateUsers).to.be.an('object');
         expect(result.data.updateUsers.nodes).to.be.an('array');
         expect(result.data.updateUsers.affectedCount).to.be.equal(1);
@@ -628,6 +651,9 @@ describe('getSchema', () => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
         expect(result.data.createUser.newUser.id).to.be.an('string');
@@ -643,6 +669,9 @@ describe('getSchema', () => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.deleteUsers).to.be.an('object');
         // expect(result.data.deleteUsers.nodes).to.be.an('array');
         // expect(result.data.deleteUsers.affectedCount).to.be.equal(1);
@@ -707,6 +736,9 @@ describe('getSchema', () => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
         expect(result.data.createUser.newUser.id).to.be.an('string');
@@ -722,6 +754,9 @@ describe('getSchema', () => {
         // console.log(JSON.stringify(result, undefined, 4));
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.deleteUser).to.be.an('object');
         // tslint:disable-next-line:id-length
         expect(result.data.deleteUser.deletedUserId).to.be.a('string');
@@ -770,7 +805,7 @@ describe('getSchema', () => {
 
     return graphql(schema, createUserMutation, {}, {}, createUserVariables)
       .then(result => {
-        const { errors } = result;
+        const { errors = [] } = result;
         expect(errors).to.be.length(1);
         const error = errors[0];
         expect(error).to.be.an('error');
@@ -809,7 +844,7 @@ describe('getSchema', () => {
 
     return graphql(schema, createUserMutation, {}, {}, createUserVariables)
       .then(result => {
-        const { errors } = result;
+        const { errors = [] } = result;
         expect(errors).to.be.length(1);
         const error = errors[0];
         expect(error).to.be.an('error');
@@ -847,6 +882,9 @@ describe('getSchema', () => {
         expect(errors).to.be.length(0);
 
         expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error();
+        }
         expect(result.data.createCustom).to.be.an('object');
         expect(result.data.createCustom.customValueA)
           .to.be.an('string')
