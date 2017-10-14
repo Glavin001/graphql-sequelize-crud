@@ -10,6 +10,9 @@ import { ModelsHashInterface as Models } from "sequelize";
 import * as Sequelize from 'sequelize';
 import * as express from 'express';
 import * as graphqlHTTP from 'express-graphql';
+// tslint:disable-next-line:no-require-imports no-var-requires
+const { express: playground } = require('graphql-playground/middleware');
+
 import {
   getSchema,
   ModelTypes,
@@ -140,6 +143,8 @@ sequelize.sync({
       schema,
       graphiql: true
     }));
+
+    app.use('/playground', playground({ endpoint: '/graphql' }));
 
     const port = 3000;
     app.listen(port, () => {

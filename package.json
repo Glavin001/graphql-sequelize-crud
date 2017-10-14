@@ -82,7 +82,8 @@
     "tslint": "^5.7.0",
     "tslint-clean-code": "^0.1.8",
     "tslint-microsoft-contrib": "^5.0.1",
-    "typescript": "^2.5.3"
+    "typescript": "^2.5.3",
+    "graphql-playground": "^1.0.8"
   },
   "dependencies": {
     "bluebird": "^3.4.1",

@@ -22,7 +22,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Launch Demo",
             "program": "${workspaceFolder}/dist/demo/index.js",
             "cwd": "${workspaceFolder}",
             "sourceMaps": true,
