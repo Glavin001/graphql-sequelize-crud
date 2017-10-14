@@ -11,11 +11,14 @@
     "dev": "tsc --watch",
     "compile": "tsc",
     "test": "mocha dist/test",
+    "test:watch": "mocha --watch dist/test",
     "coverage": "nyc --extension '.ts' --reporter html --reporter lcov --reporter text --reporter teamcity npm run test",
     "build": "npm run clean && npm run compile",
     "clean": "rm -rf dist/*",
     "demo": "node dist/demo/",
-    "viz": "echo \"Make sure server is started.\"; graphqlviz http://localhost:3000/graphql | dot -Tpng -o graph.png"
+    "viz": "echo \"Make sure server is started.\"; graphqlviz http://localhost:3000/graphql | dot -Tpng -o graph.png",
+    "lint": "tslint --config tslint.json \"{src,test}/**/*.{ts,tsx}\"",
+    "lint-fix": "tslint --fix --config tslint.json \"{src,test}/**/*.{ts,tsx}\""
   },
   "repository": {
     "type": "git",
@@ -69,6 +72,9 @@
     "nyc": "^11.2.1",
     "sequelize": "^3.23.4",
     "sqlite3": "^3.1.13",
+    "tslint": "^5.7.0",
+    "tslint-clean-code": "^0.1.8",
+    "tslint-microsoft-contrib": "^5.0.1",
     "typescript": "^2.5.3"
   },
   "dependencies": {

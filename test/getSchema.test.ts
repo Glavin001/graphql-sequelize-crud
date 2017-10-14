@@ -1,4 +1,5 @@
 'use strict';
+// tslint:disable no-multiline-string max-line-length insecure-random
 
 import { expect } from 'chai';
 import {
@@ -10,17 +11,25 @@ import {
 } from 'graphql';
 import {
   getSchema,
-  IModelTypes,
+  ModelTypes,
 } from '../src';
 import * as Sequelize from 'sequelize';
-import { ModelsHashInterface as Models } from "sequelize";
+// tslint:disable-next-line:no-duplicate-imports
+import { Sequelize as SequelizeType, ModelsHashInterface as Models } from "sequelize";
 import { resolver } from "graphql-sequelize";
 
-describe('getSchema', function () {
+describe('getSchema', () => {
 
-  let rand: any, sequelize: any, User, Todo, TodoAssignee;
+  let rand: any;
+  let sequelize: SequelizeType;
+  // tslint:disable-next-line:variable-name
+  let User: any;
+  // tslint:disable-next-line:variable-name
+  let Todo: any;
+  // tslint:disable-next-line:variable-name
+  let TodoAssignee: any;
 
-  before(function (cb) {
+  before((cb) => {
 
     sequelize = new Sequelize('database', 'username', 'password', {
       // sqlite! now!
@@ -52,10 +61,10 @@ describe('getSchema', function () {
     }, {
         timestamps: false,
         classMethods: {
-          queries: function () {
+          queries: () => {
             return {};
           },
-          mutations: (Models: Models, ModelTypes: IModelTypes, resolver: Function) => {
+          mutations: (models: Models, modelTypes: ModelTypes) => {
             return {
               createCustom: {
                 type: new GraphQLObjectType({
@@ -80,8 +89,8 @@ describe('getSchema', function () {
                 },
                 resolve: (obj: any, { dataA, dataB }: any) => {
                   return Promise.resolve({
-                    "customValueA": dataA,
-                    "customValueB": dataB,
+                    customValueA: dataA,
+                    customValueB: dataB,
                   });
                 }
               }
@@ -90,7 +99,7 @@ describe('getSchema', function () {
         }
       });
 
-    sequelize.models.User.excludeFields = ['excludedField'];
+    (<any> sequelize.models.User).excludeFields = ['excludedField'];
 
     Todo = sequelize.define('Todo', {
       id: {
@@ -141,8 +150,9 @@ describe('getSchema', function () {
 
   });
 
-  beforeEach(function (cb) {
+  beforeEach((cb) => {
 
+    // tslint:disable-next-line:no-magic-numbers
     rand = parseInt(`${Math.random() * 1000000000}`);
 
     sequelize.sync({
@@ -152,10 +162,9 @@ describe('getSchema', function () {
         cb();
       });
 
-  })
+  });
 
-
-  it('should return GraphQL Schema', function () {
+  it('should return GraphQL Schema', () => {
 
     const schema = getSchema(sequelize);
     // console.log(Object.keys(schema));
@@ -184,11 +193,11 @@ describe('getSchema', function () {
 
   });
 
-  it('should successfully create records', function (cb) {
+  it('should successfully create records', (cb) => {
 
-    var schema = getSchema(sequelize);
+    const schema = getSchema(sequelize);
 
-    let createUserMutation = `
+    const createUserMutation = `
       mutation createUserTest($input: createUserInput!) {
         createUser(input: $input) {
           newUser {
@@ -199,27 +208,27 @@ describe('getSchema', function () {
         }
       }
     `;
-    let createUserVariables = {
-      "input": {
-        "email": `testuser${rand}@web.com`,
-        "password": `password${rand}`,
-        "clientMutationId": "test"
+    const createUserVariables = {
+      input: {
+        email: `testuser${rand}@web.com`,
+        password: `password${rand}`,
+        clientMutationId: "test"
       }
     };
-    let createTodoVariables = {
-      "input": {
-        "text": "Something",
-        "completed": false,
-        "userId": undefined as undefined | string,
-        "clientMutationId": "test"
+    const createTodoVariables = {
+      input: {
+        text: "Something",
+        completed: false,
+        userId: undefined as undefined | string,
+        clientMutationId: "test"
       }
     };
-    let createTodoAssigneeVariables1 = {
-      "input": {
-        "primary": true,
-        "UserId": undefined as string | undefined,
-        "TodoId": undefined as string | undefined,
-        "clientMutationId": "test"
+    const createTodoAssigneeVariables1 = {
+      input: {
+        primary: true,
+        UserId: undefined as string | undefined,
+        TodoId: undefined as string | undefined,
+        clientMutationId: "test"
       }
     };
     // let createTodoAssigneeVariables2 = {
@@ -230,7 +239,8 @@ describe('getSchema', function () {
     //     "clientMutationId": "yo"
     //   }
     // };
-    let userId: string, todoId: string;
+    let userId: string;
+    let todoId: string;
 
     return graphql(schema, createUserMutation, {}, {}, createUserVariables)
       .then(result => {
@@ -247,7 +257,7 @@ describe('getSchema', function () {
 
         userId = result.data.createUser.newUser.id;
 
-        let createTodoMutation = `
+        const createTodoMutation = `
           mutation createTodoTest($input: createTodoInput!) {
             createTodo(input: $input) {
               newTodo {
@@ -287,7 +297,7 @@ describe('getSchema', function () {
 
         todoId = result.data.createTodo.newTodo.id;
 
-        let createTodoAssigneeMutation = `
+        const createTodoAssigneeMutation = `
           mutation createTodoAssigneeTest($input: createTodoAssigneeInput!) {
             createTodoAssignee(input: $input) {
               newTodoAssignee {
@@ -300,7 +310,7 @@ describe('getSchema', function () {
         createTodoAssigneeVariables1.input.UserId = userId;
         createTodoAssigneeVariables1.input.TodoId = todoId;
 
-        return graphql(schema, createTodoAssigneeMutation, {}, {}, createTodoAssigneeVariables1)
+        return graphql(schema, createTodoAssigneeMutation, {}, {}, createTodoAssigneeVariables1);
       })
       .then(result => {
         // console.log(JSON.stringify(result, undefined, 4));
@@ -311,9 +321,10 @@ describe('getSchema', function () {
         expect(result.data.createTodoAssignee.newTodoAssignee).to.be.an('object');
         expect(result.data.createTodoAssignee.newTodoAssignee.id).to.be.an('string');
 
-        expect(result.data.createTodoAssignee.newTodoAssignee.primary).to.be.equal(createTodoAssigneeVariables1.input.primary);
+        expect(result.data.createTodoAssignee.newTodoAssignee.primary)
+          .to.be.equal(createTodoAssigneeVariables1.input.primary);
 
-        let queryUser = `query {
+        const queryUser = `query {
           todos {
             id
             text
@@ -402,11 +413,11 @@ describe('getSchema', function () {
 
   });
 
-  it('should successfully create and update single User record', function (cb) {
+  it('should successfully create and update single User record', (cb) => {
 
-    var schema = getSchema(sequelize);
+    const schema = getSchema(sequelize);
 
-    let createUserMutation = `
+    const createUserMutation = `
       mutation createUserTest($input: createUserInput!) {
         createUser(input: $input) {
           newUser {
@@ -417,14 +428,14 @@ describe('getSchema', function () {
         }
       }
     `;
-    let createUserVariables = {
-      "input": {
-        "email": `testuser${rand}@web.com`,
-        "password": `password${rand}`,
-        "clientMutationId": "test"
+    const createUserVariables = {
+      input: {
+        email: `testuser${rand}@web.com`,
+        password: `password${rand}`,
+        clientMutationId: "test"
       }
     };
-    let updateUserMutation = `
+    const updateUserMutation = `
       mutation updateUserTest($input: updateUserInput!) {
         updateUser(input: $input) {
           newUser {
@@ -435,14 +446,14 @@ describe('getSchema', function () {
         }
       }
     `;
-    let updateUserVariables = {
-      "input": {
-        "id": undefined as string | undefined,
-        "values": {
-          "email": `testuser${rand + 1}@web.com`,
-          "password": `password${rand - 1}`,
+    const updateUserVariables = {
+      input: {
+        id: undefined as string | undefined,
+        values: {
+          email: `testuser${rand + 1}@web.com`,
+          password: `password${rand - 1}`,
         },
-        "clientMutationId": "test"
+        clientMutationId: "test"
       }
     };
 
@@ -485,12 +496,11 @@ describe('getSchema', function () {
 
   });
 
+  it('should successfully create and update User records', (cb) => {
 
-  it('should successfully create and update User records', function (cb) {
+    const schema = getSchema(sequelize);
 
-    var schema = getSchema(sequelize);
-
-    let createUserMutation = `
+    const createUserMutation = `
       mutation createUserTest($input: createUserInput!) {
         createUser(input: $input) {
           newUser {
@@ -501,14 +511,14 @@ describe('getSchema', function () {
         }
       }
     `;
-    let createUserVariables = {
-      "input": {
-        "email": `testuser${rand}@web.com`,
-        "password": `password${rand}`,
-        "clientMutationId": "test"
+    const createUserVariables = {
+      input: {
+        email: `testuser${rand}@web.com`,
+        password: `password${rand}`,
+        clientMutationId: "test"
       }
     };
-    let updateUsersMutation = `
+    const updateUsersMutation = `
       mutation updateUsersTest($input: updateUsersInput!) {
         updateUsers(input: $input) {
           affectedCount
@@ -522,14 +532,14 @@ describe('getSchema', function () {
         }
       }
     `;
-    let updateUsersVariables = {
-      "input": {
-        "values": {
-          "email": `testuser${rand + 1}@web.com`,
-          "password": `password${rand + 1}`,
+    const updateUsersVariables = {
+      input: {
+        values: {
+          email: `testuser${rand + 1}@web.com`,
+          password: `password${rand + 1}`,
         },
-        "where": {} as any,
-        "clientMutationId": "test"
+        where: {} as any,
+        clientMutationId: "test"
       }
     };
 
@@ -575,11 +585,11 @@ describe('getSchema', function () {
 
   });
 
-  it('should successfully create and delete User records', function (cb) {
+  it('should successfully create and delete User records', (cb) => {
 
-    var schema = getSchema(sequelize);
+    const schema = getSchema(sequelize);
 
-    let createUserMutation = `
+    const createUserMutation = `
       mutation createUserTest($input: createUserInput!) {
         createUser(input: $input) {
           newUser {
@@ -590,24 +600,24 @@ describe('getSchema', function () {
         }
       }
     `;
-    let createUserVariables = {
-      "input": {
-        "email": `testuser${rand}@web.com`,
-        "password": `password${rand}`,
-        "clientMutationId": "test"
+    const createUserVariables = {
+      input: {
+        email: `testuser${rand}@web.com`,
+        password: `password${rand}`,
+        clientMutationId: "test"
       }
     };
-    let deleteUsersMutation = `
+    const deleteUsersMutation = `
       mutation deleteUsersTest($input: deleteUsersInput!) {
         deleteUsers(input: $input) {
           affectedCount
         }
       }
     `;
-    let deleteUsersVariables = {
-      "input": {
-        "where": {} as any,
-        "clientMutationId": "test"
+    const deleteUsersVariables = {
+      input: {
+        where: {} as any,
+        clientMutationId: "test"
       }
     };
 
@@ -654,11 +664,11 @@ describe('getSchema', function () {
 
   });
 
-  it('should successfully create and delete single User record', function (cb) {
+  it('should successfully create and delete single User record', (cb) => {
 
-    var schema = getSchema(sequelize);
+    const schema = getSchema(sequelize);
 
-    let createUserMutation = `
+    const createUserMutation = `
       mutation createUserTest($input: createUserInput!) {
         createUser(input: $input) {
           newUser {
@@ -669,24 +679,24 @@ describe('getSchema', function () {
         }
       }
     `;
-    let createUserVariables = {
-      "input": {
-        "email": `testuser${rand}@web.com`,
-        "password": `password${rand}`,
-        "clientMutationId": "test"
+    const createUserVariables = {
+      input: {
+        email: `testuser${rand}@web.com`,
+        password: `password${rand}`,
+        clientMutationId: "test"
       }
     };
-    let deleteUserMutation = `
+    const deleteUserMutation = `
       mutation deleteUserTest($input: deleteUserInput!) {
         deleteUser(input: $input) {
           deletedUserId
         }
       }
     `;
-    let deleteUserVariables = {
-      "input": {
-        "clientMutationId": "test",
-        "id": undefined as string | undefined
+    const deleteUserVariables = {
+      input: {
+        clientMutationId: "test",
+        id: undefined as string | undefined
       }
     };
 
@@ -713,6 +723,7 @@ describe('getSchema', function () {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         expect(result.data.deleteUser).to.be.an('object');
+        // tslint:disable-next-line:id-length
         expect(result.data.deleteUser.deletedUserId).to.be.a('string');
         expect(result.data.deleteUser.deletedUserId).to.be.equal(deleteUserVariables.input.id);
         // expect(result.data.deleteUsers.nodes.length).to.be.equal(1);
@@ -733,11 +744,11 @@ describe('getSchema', function () {
 
   });
 
-  it('should fail to create user with excluded field', function (cb) {
+  it('should fail to create user with excluded field', (cb) => {
 
-    var schema = getSchema(sequelize);
+    const schema = getSchema(sequelize);
 
-    let createUserMutation = `
+    const createUserMutation = `
           mutation createUserTest($input: createUserInput!) {
             createUser(input: $input) {
               newUser {
@@ -748,12 +759,12 @@ describe('getSchema', function () {
             }
           }
         `;
-    let createUserVariables = {
-      "input": {
-        "email": `testuser${rand}@web.com`,
-        "password": `password${rand}`,
-        "excludedField": `excluded${rand}`,
-        "clientMutationId": "test"
+    const createUserVariables = {
+      input: {
+        email: `testuser${rand}@web.com`,
+        password: `password${rand}`,
+        excludedField: `excluded${rand}`,
+        clientMutationId: "test"
       }
     };
 
@@ -772,11 +783,11 @@ describe('getSchema', function () {
 
   });
 
-  it('should fail to create user with excluded field', function (cb) {
+  it('should fail to create user with excluded field', (cb) => {
 
-    var schema = getSchema(sequelize);
+    const schema = getSchema(sequelize);
 
-    let createUserMutation = `
+    const createUserMutation = `
       mutation createCustom($input: createUserInput!) {
         createUser(input: $input) {
           newUser {
@@ -787,12 +798,12 @@ describe('getSchema', function () {
         }
       }
     `;
-    let createUserVariables = {
-      "input": {
-        "email": `testuser${rand}@web.com`,
-        "password": `password${rand}`,
-        "excludedField": `excluded${rand}`,
-        "clientMutationId": "test"
+    const createUserVariables = {
+      input: {
+        email: `testuser${rand}@web.com`,
+        password: `password${rand}`,
+        excludedField: `excluded${rand}`,
+        clientMutationId: "test"
       }
     };
 
@@ -811,22 +822,21 @@ describe('getSchema', function () {
 
   });
 
+  it('should successfully create custom record with custom mutation', (cb) => {
 
-  it('should successfully create custom record with custom mutation', function (cb) {
+    const schema = getSchema(sequelize);
 
-    var schema = getSchema(sequelize);
-
-    let createCustomMutation = `
+    const createCustomMutation = `
     mutation createCustomTest($dataA: String!, $dataB: String!) {
       createCustom(dataA: $dataA, dataB: $dataB) {
         customValueA
         customValueB
       }
-    }    
+    }
     `;
-    let createCustomVariables = {
-      "dataA": "hello",
-      "dataB": "world"
+    const createCustomVariables = {
+      dataA: "hello",
+      dataB: "world"
     };
 
     return graphql(schema, createCustomMutation, {}, {}, createCustomVariables)

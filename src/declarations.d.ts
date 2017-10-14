@@ -3,23 +3,23 @@ declare module "graphql-sequelize" {
     import { GraphQLFieldResolver } from "graphql";
     import { ConnectionConfig } from "graphql-relay";
 
-    export function defaultArgs(Model: any): any;
+    export function defaultArgs(model: any): any;
 
-    export function defaultListArgs(Model: any): { limit: any; order: any; where: any; };
+    export function defaultListArgs(model: any): { limit: any; order: any; where: any; };
 
     export interface AttributeFieldsOptions {
-        exclude?: Array<any>, // array of model attributes to ignore - default: []
-        only?: Array<any>, // only generate definitions for these model attributes - default: null
-        globalId?: boolean, // return an relay global id field - default: false
-        map?: object, // rename fields - default: {}
-        allowNull?: boolean, // disable wrapping mandatory fields in `GraphQLNonNull` - default: false
-        commentToDescription?: boolean, // convert model comment to GraphQL description - default: false
-        cache?: object, // Cache enum types to prevent duplicate type name error - default: {}
+        exclude?: any[]; // array of model attributes to ignore - default: []
+        only?: any[]; // only generate definitions for these model attributes - default: null
+        globalId?: boolean; // return an relay global id field - default: false
+        map?: object; // rename fields - default: {}
+        allowNull?: boolean; // disable wrapping mandatory fields in `GraphQLNonNull` - default: false
+        commentToDescription?: boolean; // convert model comment to GraphQL description - default: false
+        cache?: object; // Cache enum types to prevent duplicate type name error - default: {}
     }
 
-    export function attributeFields(Model: any, options?: AttributeFieldsOptions): any;
+    export function attributeFields(model: any, options?: AttributeFieldsOptions): any;
 
-    export function resolver(Model: any, options?: {
+    export function resolver(model: any, options?: {
         before?: Function;
         after?: Function;
         separate?: boolean;

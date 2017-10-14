@@ -7,14 +7,15 @@ import {
   GraphQLNonNull,
   GraphQLObjectType,
 } from 'graphql';
+// tslint:disable-next-line:no-duplicate-imports
+import { ModelsHashInterface as Models } from "sequelize";
 import * as Sequelize from 'sequelize';
 import * as express from 'express';
 import * as graphqlHTTP from 'express-graphql';
-import { ModelsHashInterface as Models } from "sequelize";
 import { resolver } from "graphql-sequelize";
 import {
   getSchema,
-  IModelTypes,
+  ModelTypes,
 } from '../src';
 
 const app = express();
@@ -31,6 +32,7 @@ const sequelize = new Sequelize('database', 'username', 'password', {
 
 });
 
+// tslint:disable-next-line:variable-name
 const User = sequelize.define('User', {
   email: {
     type: Sequelize.STRING,
@@ -44,10 +46,10 @@ const User = sequelize.define('User', {
 }, {
     timestamps: true,
     classMethods: {
-      queries: function () {
+      queries: () => {
         return {};
       },
-      mutations: (Models: Models, ModelTypes: IModelTypes, resolver: Function) => {
+      mutations: (models: Models, modelTypes: ModelTypes) => {
         return {
           createCustom: {
             type: new GraphQLObjectType({
@@ -72,8 +74,8 @@ const User = sequelize.define('User', {
             },
             resolve: (obj: any, { dataA, dataB }: any) => {
               return Promise.resolve({
-                "customValueA": dataA,
-                "customValueB": dataB,
+                customValueA: dataA,
+                customValueB: dataB,
               });
             }
           }
@@ -81,6 +83,8 @@ const User = sequelize.define('User', {
       }
     }
   });
+
+// tslint:disable-next-line:variable-name
 const Todo = sequelize.define('Todo', {
   id: {
     type: Sequelize.INTEGER,
@@ -100,6 +104,7 @@ const Todo = sequelize.define('Todo', {
     timestamps: true
   });
 
+// tslint:disable-next-line:variable-name
 const TodoAssignee = sequelize.define('TodoAssignee', {
   primary: {
     type: Sequelize.BOOLEAN
@@ -107,7 +112,6 @@ const TodoAssignee = sequelize.define('TodoAssignee', {
 }, {
     timestamps: true
   });
-
 
 User.hasMany(Todo, {
   as: 'todos',
@@ -136,12 +140,13 @@ sequelize.sync({
     const schema = getSchema(sequelize);
 
     app.use('/graphql', graphqlHTTP({
-      schema: schema,
+      schema,
       graphiql: true
     }));
 
     const port = 3000;
     app.listen(port, () => {
+      // tslint:disable-next-line:no-console
       console.log(`Listening on port ${port}`);
     });
 
