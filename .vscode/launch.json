@@ -15,6 +15,9 @@
                 "--timeout",
                 "999999",
                 "--colors",
+                "dist/test",
+                "--require",
+                "source-map-support/register",
                 "${workspaceFolder}/dist/test"
             ],
             "internalConsoleOptions": "openOnSessionStart"

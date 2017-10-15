@@ -17,7 +17,7 @@
     "prepublishOnly": "npm run build",
     "dev": "tsc --watch",
     "compile": "tsc",
-    "test": "mocha dist/test",
+    "test": "mocha --require source-map-support/register dist/test",
     "test:watch": "mocha --watch dist/test",
     "coverage": "nyc --extension '.ts' --reporter html --reporter lcov --reporter text --reporter teamcity npm run test",
     "build": "npm run clean && npm run compile",
