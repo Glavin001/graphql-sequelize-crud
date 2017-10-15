@@ -1,3 +1,6 @@
+// tslint:disable-next-line:no-reference
+/// <reference path="./@types/graphql-sequelize/index.d.ts" />
+
 import {
     GraphQLObjectType,
     GraphQLInt,

@@ -4,16 +4,13 @@ declare module "graphql-sequelize" {
     import {
         GraphQLFieldResolver,
         GraphQLFieldConfigArgumentMap,
-        GraphQLFieldConfig,
         GraphQLFieldConfigMap,
         GraphQLInputFieldConfigMap,
         GraphQLObjectType,
         GraphQLInputObjectType,
     } from "graphql";
     import { ConnectionConfig } from "graphql-relay";
-    import { Sequelize } from "sequelize";
-    import { Model as SequelizeModel } from "sequelize";
-    import { SequelizeConnection } from "graphql-sequelize";
+    import { Sequelize, Model as SequelizeModel } from "sequelize";
 
     export interface Model extends SequelizeModel<any, any> {
         associations: {

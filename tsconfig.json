@@ -15,8 +15,22 @@
             "es6",
             "dom",
             "esnext"
-        ]
+        ],
+        "paths": {
+            "graphql-sequelize/*": [
+                "src/@types/graphql-sequelize/*"
+            ]
+        },
+        "baseUrl": "."
     },
+    "files": [
+        "src/@types/graphql-sequelize/index.d.ts"
+    ],
+    "include": [
+        "demo",
+        "src",
+        "test"
+    ],
     "exclude": [
         "node_modules",
         "dist"
