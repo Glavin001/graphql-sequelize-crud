@@ -248,7 +248,7 @@ describe('getSchema', () => {
         expect(result.errors).to.be.equal(undefined, `An error occurred: ${result.errors}`);
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
@@ -288,7 +288,7 @@ describe('getSchema', () => {
         expect(result.errors).to.be.equal(undefined, `An error occurred: ${result.errors}`);
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.createTodo).to.be.an('object');
         expect(result.data.createTodo.newTodo).to.be.an('object');
@@ -323,7 +323,7 @@ describe('getSchema', () => {
         expect(result.errors).to.be.equal(undefined, `An error occurred: ${result.errors}`);
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.createTodoAssignee).to.be.an('object');
         expect(result.data.createTodoAssignee.newTodoAssignee).to.be.an('object');
@@ -382,14 +382,18 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
 
         expect(result.data.todoAssignees).to.be.an('array');
-        expect(result.data.todoAssignees[0].id).to.be.an('string');
+        expect(result.data.todoAssignees[0].id)
+          .to.be.an('string')
+          .equal('VG9kb0Fzc2lnbmVlOjE=');
 
         expect(result.data.users).to.be.an('array');
-        expect(result.data.users[0].id).to.be.an('string');
+        expect(result.data.users[0].id)
+          .to.be.an('string')
+          .equal('VXNlcjox');
 
         expect(result.data.users[0].todos).to.be.an('object');
         expect(result.data.users[0].todos.edges).to.be.an('array');
@@ -397,24 +401,35 @@ describe('getSchema', () => {
         expect(result.data.users[0].todos.edges[0].node).to.be.an('object');
 
         expect(result.data.todos[0].user).to.be.an('object');
-        expect(result.data.todos[0].user.id).to.be.an('string');
+        expect(result.data.todos[0].user.id)
+          .to.be.an('string')
+          .equal(result.data.users[0].id);
 
         expect(result.data.users[0].assignedTodos).to.be.an('object');
         expect(result.data.users[0].assignedTodos.total).to.be.an('number');
         expect(result.data.users[0].assignedTodos.edges).to.be.an('array');
         expect(result.data.users[0].assignedTodos.edges[0]).to.be.an('object');
-        expect(result.data.users[0].assignedTodos.edges[0].id).to.be.an('string');
         expect(result.data.users[0].assignedTodos.edges[0].primary).to.be.an('boolean');
         expect(result.data.users[0].assignedTodos.edges[0].node).to.be.an('object');
 
         expect(result.data.users[0].assignedTodos.edges[0].primary).to.be.equal(true);
-        expect(result.data.users[0].assignedTodos.edges[0].id).to.be.equal(result.data.todoAssignees[0].id);
+        expect(result.data.users[0].assignedTodos.edges[0].id)
+          .to.be.an('string')
+          .equal(result.data.todoAssignees[0].id);
 
         expect(result.data.users[0].assignedTodos.edges[0].node.id).to.be.an('string');
-        expect(result.data.users[0].assignedTodos.edges[0].id).to.be.equal(result.data.todoAssignees[0].id);
-        expect(result.data.users[0].assignedTodos.edges[0].node.id).to.be.equal(result.data.todos[0].id);
-        expect(result.data.users[0].assignedTodos.edges[0].node.text).to.be.equal(createTodoVariables.input.text);
-        expect(result.data.users[0].assignedTodos.edges[0].node.completed).to.be.equal(createTodoVariables.input.completed);
+        expect(result.data.users[0].assignedTodos.edges[0].id)
+          .to.be.an('string')
+          .equal(result.data.todoAssignees[0].id);
+        expect(result.data.users[0].assignedTodos.edges[0].node.id)
+          .to.be.an('string')
+          .equal(result.data.todos[0].id);
+        expect(result.data.users[0].assignedTodos.edges[0].node.text)
+          .to.be.an('string')
+          .equal(createTodoVariables.input.text);
+        expect(result.data.users[0].assignedTodos.edges[0].node.completed)
+          .to.be.an('boolean')
+          .equal(createTodoVariables.input.completed);
 
         cb();
       })
@@ -476,11 +491,13 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
-        expect(result.data.createUser.newUser.id).to.be.an('string');
+        expect(result.data.createUser.newUser.id)
+          .to.be.an('string')
+          .equal('VXNlcjox');
 
         userId = result.data.createUser.newUser.id;
         updateUserVariables.input.id = userId;
@@ -493,17 +510,25 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.updateUser).to.be.an('object');
         expect(result.data.updateUser.newUser).to.be.an('object');
-        expect(result.data.updateUser.newUser.id).to.be.an('string');
+        expect(result.data.updateUser.newUser.id)
+          .to.be.an('string')
+          .equal(updateUserVariables.input.id);
         expect(result.data.updateUser.newUser.email).to.be.an('string');
         expect(result.data.updateUser.newUser.password).to.be.an('string');
 
-        expect(result.data.updateUser.newUser.id).to.be.equal(updateUserVariables.input.id);
-        expect(result.data.updateUser.newUser.email).to.be.equal(updateUserVariables.input.values.email);
-        expect(result.data.updateUser.newUser.password).to.be.equal(updateUserVariables.input.values.password);
+        expect(result.data.updateUser.newUser.id)
+          .to.be.an('string')
+          .equal(updateUserVariables.input.id);
+        expect(result.data.updateUser.newUser.email)
+          .to.be.an('string')
+          .equal(updateUserVariables.input.values.email);
+        expect(result.data.updateUser.newUser.password)
+          .to.be.an('string')
+          .equal(updateUserVariables.input.values.password);
 
         cb();
       })
@@ -568,11 +593,13 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
-        expect(result.data.createUser.newUser.id).to.be.an('string');
+        expect(result.data.createUser.newUser.id)
+          .to.be.an('string')
+          .equal('VXNlcjox');
 
         userId = result.data.createUser.newUser.id;
         updateUsersVariables.input.where.id = userId;
@@ -585,15 +612,19 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.updateUsers).to.be.an('object');
         expect(result.data.updateUsers.nodes).to.be.an('array');
-        expect(result.data.updateUsers.affectedCount).to.be.equal(1);
         expect(result.data.updateUsers.nodes.length).to.be.equal(1);
+        expect(result.data.updateUsers.affectedCount)
+          .to.be.an('number')
+          .equal(1);
         expect(result.data.updateUsers.nodes[0]).to.be.an('object');
         expect(result.data.updateUsers.nodes[0].newUser).to.be.an('object');
-        expect(result.data.updateUsers.nodes[0].newUser.id).to.be.an('string');
+        expect(result.data.updateUsers.nodes[0].newUser.id)
+          .to.be.an('string')
+          .equal(updateUsersVariables.input.where.id);
         expect(result.data.updateUsers.nodes[0].newUser.email).to.be.an('string');
         expect(result.data.updateUsers.nodes[0].newUser.password).to.be.an('string');
 
@@ -652,11 +683,13 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
-        expect(result.data.createUser.newUser.id).to.be.an('string');
+        expect(result.data.createUser.newUser.id)
+          .to.be.an('string')
+          .equal('VXNlcjox');
 
         userId = result.data.createUser.newUser.id;
         deleteUsersVariables.input.where.id = userId;
@@ -670,11 +703,11 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.deleteUsers).to.be.an('object');
         // expect(result.data.deleteUsers.nodes).to.be.an('array');
-        // expect(result.data.deleteUsers.affectedCount).to.be.equal(1);
+        expect(result.data.deleteUsers.affectedCount).to.be.equal(1);
         // expect(result.data.deleteUsers.nodes.length).to.be.equal(1);
         // expect(result.data.deleteUsers.nodes[0]).to.be.an('object');
         // expect(result.data.deleteUsers.nodes[0].newUser).to.be.an('object');
@@ -737,11 +770,13 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.createUser).to.be.an('object');
         expect(result.data.createUser.newUser).to.be.an('object');
-        expect(result.data.createUser.newUser.id).to.be.an('string');
+        expect(result.data.createUser.newUser.id)
+          .to.be.an('string')
+          .equal('VXNlcjox');
 
         userId = result.data.createUser.newUser.id;
         deleteUserVariables.input.id = userId;
@@ -755,7 +790,7 @@ describe('getSchema', () => {
         expect(result).to.be.an('object');
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.deleteUser).to.be.an('object');
         // tslint:disable-next-line:id-length
@@ -809,7 +844,9 @@ describe('getSchema', () => {
         expect(errors).to.be.length(1);
         const error = errors[0];
         expect(error).to.be.an('error');
-        expect(error.message).to.contain('excludedField');
+        expect(error.message)
+          .to.contain('excludedField')
+          .to.contain('Unknown field');
         cb();
       })
       .catch((error: Error) => {
@@ -848,7 +885,9 @@ describe('getSchema', () => {
         expect(errors).to.be.length(1);
         const error = errors[0];
         expect(error).to.be.an('error');
-        expect(error.message).to.contain('excludedField');
+        expect(error.message)
+          .to.contain('excludedField')
+          .to.contain('Unknown field');
         cb();
       })
       .catch((error: Error) => {
@@ -883,7 +922,7 @@ describe('getSchema', () => {
 
         expect(result.data).to.be.an('object');
         if (!result.data) {
-          throw new Error();
+          throw new Error("No data");
         }
         expect(result.data.createCustom).to.be.an('object');
         expect(result.data.createCustom.customValueA)
