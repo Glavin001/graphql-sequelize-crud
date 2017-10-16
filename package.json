@@ -1,17 +1,32 @@
 {
   "name": "graphql-sequelize-crud",
-  "version": "0.3.0",
+  "version": "0.4.1",
   "description": "Automatically generate queries and mutations from Sequelize models",
-  "main": "lib/index.js",
+  "main": "./dist/src/index",
+  "types": "./dist/src/index.d.ts",
   "directories": {
-    "test": "test"
+    "test": "test",
+    "lib": "dist",
+    "example": "demo"
   },
+  "files": [
+    "dist/src",
+    "src/@types"
+  ],
   "scripts": {
-    "prepublish": "npm run build",
-    "test": "mocha --compilers js:babel-core/register",
-    "build": "rm -rf lib/* && babel src --ignore test --out-dir lib",
-    "demo": "babel-node demo/",
-    "viz": "echo \"Make sure server is started.\"; graphqlviz http://localhost:3000/graphql | dot -Tpng -o graph.png"
+    "prepublishOnly": "npm run build",
+    "dev": "tsc --watch",
+    "compile": "tsc",
+    "test": "mocha --require source-map-support/register dist/test",
+    "test:watch": "mocha --watch dist/test",
+    "coverage": "nyc --extension '.ts' --reporter html --reporter lcov --reporter text --reporter teamcity npm run test",
+    "build": "npm run clean && npm run compile",
+    "clean": "rm -rf dist/*",
+    "demo": "node dist/demo/",
+    "viz": "echo \"Make sure server is started.\"; graphqlviz http://localhost:3000/graphql | dot -Tpng -o graph.png",
+    "lint": "tslint --config tslint.json \"{src,test}/**/*.{ts,tsx}\"",
+    "lint-fix": "tslint --fix --config tslint.json \"{src,test}/**/*.{ts,tsx}\"",
+    "all": "npm run build && npm test && npm run lint"
   },
   "repository": {
     "type": "git",
@@ -38,22 +53,39 @@
   },
   "homepage": "https://github.com/Glavin001/graphql-sequelize-crud#readme",
   "devDependencies": {
+    "@types/camelcase": "^4.1.0",
+    "@types/chai": "^4.0.4",
+    "@types/express": "^4.0.37",
+    "@types/express-graphql": "^0.0.34",
+    "@types/graphql": "^0.11.5",
+    "@types/graphql-relay": "^0.4.2",
+    "@types/lodash": "^4.14.77",
+    "@types/mocha": "^2.2.43",
+    "@types/pluralize": "^0.0.27",
+    "@types/sequelize": "^4.0.76",
     "babel-cli": "^6.10.1",
     "babel-core": "^6.10.4",
     "babel-plugin-transform-es2015-destructuring": "^6.9.0",
     "babel-plugin-transform-object-rest-spread": "^6.8.0",
     "babel-preset-es2015": "^6.9.0",
     "chai": "^3.5.0",
-    "express": "^4.14.0",
+    "express": "^4.16.2",
     "express-graphql": "^0.5.3",
-    "graphql": "^0.6.0",
+    "graphql": "^0.11.7",
+    "graphql-playground": "^1.0.13",
     "graphql-relay": "^0.4.2",
-    "graphql-sequelize": "^2.1.2",
+    "graphql-sequelize-teselagen": "^5.3.7",
     "graphqlviz": "^1.1.0",
     "mocha": "^2.5.3",
     "mysql": "^2.11.1",
+    "nyc": "^11.2.1",
     "sequelize": "^3.23.4",
-    "sqlite3": "^3.1.4"
+    "source-map-support": "^0.5.0",
+    "sqlite3": "^3.1.13",
+    "tslint": "^5.7.0",
+    "tslint-clean-code": "^0.1.8",
+    "tslint-microsoft-contrib": "^5.0.1",
+    "typescript": "^2.5.3"
   },
   "dependencies": {
     "bluebird": "^3.4.1",
@@ -62,9 +94,9 @@
     "pluralize": "^3.0.0"
   },
   "peerDepedencies": {
-    "graphql": "^0.6.0",
+    "graphql": ">=0.7.0",
     "graphql-relay": "^0.4.2",
-    "graphql-sequelize": "^2.2.0",
+    "graphql-sequelize-teselagen": "^5.3.7",
     "sequelize": "^3.23.4"
   }
 }

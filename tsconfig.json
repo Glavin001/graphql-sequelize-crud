@@ -1,0 +1,38 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "removeComments": false,
+        "preserveConstEnums": true,
+        "strictNullChecks": true,
+        "sourceMap": true,
+        "target": "es5",
+        "declaration": true,
+        "moduleResolution": "node",
+        "outDir": "dist",
+        "lib": [
+            "es6",
+            "dom",
+            "esnext"
+        ],
+        "paths": {
+            "graphql-sequelize/*": [
+                "src/@types/graphql-sequelize/*"
+            ]
+        },
+        "baseUrl": "."
+    },
+    "files": [
+        "src/@types/graphql-sequelize/index.d.ts"
+    ],
+    "include": [
+        "demo",
+        "src",
+        "test"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}
