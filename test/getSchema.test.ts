@@ -177,6 +177,8 @@ describe('getSchema', () => {
       .catch(error => console.error(error))
       .then(cb)
       ;
+    } else {
+      cb();
     }
   });
 
