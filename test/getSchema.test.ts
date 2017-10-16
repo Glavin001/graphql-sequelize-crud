@@ -18,7 +18,7 @@ import * as Sequelize from 'sequelize';
 // tslint:disable-next-line:no-duplicate-imports
 import { Sequelize as SequelizeType, ModelsHashInterface as Models } from "sequelize";
 
-const dumpDatabase = false;
+const debug = false;
 
 describe('getSchema', () => {
 
@@ -42,7 +42,7 @@ describe('getSchema', () => {
       // storage: 'path/to/database.sqlite'
 
       // disable logging; default: console.log
-      logging: false
+      logging: debug,
 
     });
 
@@ -168,7 +168,7 @@ describe('getSchema', () => {
   });
 
   afterEach((cb) => {
-    if (dumpDatabase) {
+    if (debug) {
       const { models } = sequelize;
       Promise.all(Object.keys(models)
       .map((modelName) => models[modelName].findAll()))

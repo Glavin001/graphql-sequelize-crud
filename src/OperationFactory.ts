@@ -24,7 +24,7 @@ import {
     resolver,
     SequelizeConnection,
     Cache,
-} from "graphql-sequelize";
+} from "graphql-sequelize-teselagen";
 import {
     convertFieldsFromGlobalId,
     mutationName,

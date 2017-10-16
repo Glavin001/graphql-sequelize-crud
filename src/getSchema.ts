@@ -16,7 +16,7 @@ import {
     resolver,
     relay,
     Cache,
-} from "graphql-sequelize";
+} from "graphql-sequelize-teselagen";
 const {
     sequelizeNodeInterface,
     sequelizeConnection
@@ -193,6 +193,7 @@ export function getSchema(sequelize: Sequelize) {
                         commentToDescription: true,
                         cache
                     }) as GraphQLFieldConfigMap<any, any>;
+
                     // Pass Through model to resolve function
                     _.each(edgeFields, (edgeField: GraphQLFieldConfigMap<any, any>, field: string) => {
                         const oldResolve = edgeField.resolve;
@@ -201,19 +202,22 @@ export function getSchema(sequelize: Sequelize) {
                             // console.log(oldResolve);
                             // tslint:disable-next-line:max-func-args
                             const resolve: GraphQLFieldResolver<any, any> = (source, args, context, info) => {
-                                const modelNode = source.node[getTableName(aModel)];
+                                const modelName = getTableName(aModel);
+                                const modelNode = source.node[modelName];
                                 return modelNode[field];
                             };
                             edgeField.resolve = resolve.bind(edgeField);
                         } else {
                             // tslint:disable-next-line:max-func-args
                             const resolve: GraphQLFieldResolver<any, any> = (source, args, context, info) => {
-                                const modelNode = source.node[getTableName(aModel)];
+                                const modelName = getTableName(aModel);
+                                const modelNode = source.node[modelName];
                                 return oldResolve(modelNode, args, context, info);
                             };
                             edgeField.resolve = resolve.bind(edgeField);
                         }
                     });
+
                 }
 
                 const connection = sequelizeConnection({
