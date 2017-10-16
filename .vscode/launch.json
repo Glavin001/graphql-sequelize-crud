@@ -20,7 +20,8 @@
                 "source-map-support/register",
                 "${workspaceFolder}/dist/test"
             ],
-            "internalConsoleOptions": "openOnSessionStart"
+            "internalConsoleOptions": "openOnSessionStart",
+            "preLaunchTask": "npm: build"
         },
         {
             "type": "node",
@@ -31,7 +32,8 @@
             "sourceMaps": true,
             "outFiles": [
                 "${workspaceFolder}/dist/**/*.js"
-            ]
+            ],
+            "preLaunchTask": "npm: build"
         }
     ]
 }
