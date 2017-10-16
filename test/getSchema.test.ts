@@ -8,6 +8,7 @@ import {
   GraphQLString,
   GraphQLNonNull,
   GraphQLObjectType,
+  GraphQLError,
 } from 'graphql';
 import {
   getSchema,
@@ -16,6 +17,8 @@ import {
 import * as Sequelize from 'sequelize';
 // tslint:disable-next-line:no-duplicate-imports
 import { Sequelize as SequelizeType, ModelsHashInterface as Models } from "sequelize";
+
+const dumpDatabase = false;
 
 describe('getSchema', () => {
 
@@ -129,7 +132,8 @@ describe('getSchema', () => {
 
     TodoAssignee = sequelize.define('TodoAssignee', {
       primary: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
       }
     }, {
         timestamps: true
@@ -161,6 +165,19 @@ describe('getSchema', () => {
         cb();
       });
 
+  });
+
+  afterEach((cb) => {
+    if (dumpDatabase) {
+      const { models } = sequelize;
+      Promise.all(Object.keys(models)
+      .map((modelName) => models[modelName].findAll()))
+      // tslint:disable-next-line:no-console no-magic-numbers
+      .then(result => console.log(JSON.stringify(result, null, 2)))
+      .catch(error => console.error(error))
+      .then(cb)
+      ;
+    }
   });
 
   it('should return GraphQL Schema', () => {
@@ -843,8 +860,9 @@ describe('getSchema', () => {
         const { errors = [] } = result;
         expect(errors).to.be.length(1);
         const error = errors[0];
-        expect(error).to.be.an('error');
+        expect(error).to.be.instanceOf(GraphQLError);
         expect(error.message)
+          .to.be.an('string')
           .to.contain('excludedField')
           .to.contain('Unknown field');
         cb();
@@ -884,8 +902,9 @@ describe('getSchema', () => {
         const { errors = [] } = result;
         expect(errors).to.be.length(1);
         const error = errors[0];
-        expect(error).to.be.an('error');
+        expect(error).to.be.instanceOf(GraphQLError);
         expect(error.message)
+          .to.be.an('string')
           .to.contain('excludedField')
           .to.contain('Unknown field');
         cb();
