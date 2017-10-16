@@ -14,7 +14,6 @@ import {
 import * as _ from 'lodash';
 import * as camelcase from 'camelcase';
 import {
-    globalIdField,
     mutationWithClientMutationId
 } from "graphql-relay";
 import {
@@ -31,6 +30,7 @@ import {
     getTableName,
     convertFieldsToGlobalId,
     queryName,
+    globalIdInputField,
 } from "./utils";
 import {
     Model,
@@ -391,7 +391,7 @@ export class OperationFactory {
                 cache[updateModelInputTypeName] = updateModelValuesType;
 
                 return {
-                    [model.primaryKeyAttribute]: globalIdField(getTableName(model)),
+                    [model.primaryKeyAttribute]: globalIdInputField(getTableName(model)),
                     values: {
                         type: updateModelValuesType
                     }
@@ -561,7 +561,7 @@ export class OperationFactory {
             description: `Delete single ${getTableName(model)} record.`,
             inputFields: () => {
                 return {
-                    [model.primaryKeyAttribute]: globalIdField(getTableName(model)),
+                    [model.primaryKeyAttribute]: globalIdInputField(getTableName(model)),
                 } as any;
             },
             outputFields: () => {

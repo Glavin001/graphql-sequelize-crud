@@ -71,7 +71,7 @@
     "chai": "^3.5.0",
     "express": "^4.16.2",
     "express-graphql": "^0.5.3",
-    "graphql": "~0.8.2",
+    "graphql": "^0.11.7",
     "graphql-playground": "^1.0.13",
     "graphql-relay": "^0.4.2",
     "graphql-sequelize-teselagen": "^5.3.7",
@@ -94,9 +94,9 @@
     "pluralize": "^3.0.0"
   },
   "peerDepedencies": {
-    "graphql": ">=0.7.0 <0.9.0",
+    "graphql": ">=0.7.0",
     "graphql-relay": "^0.4.2",
-    "graphql-sequelize": "^2.2.0",
+    "graphql-sequelize-teselagen": "^5.3.7",
     "sequelize": "^3.23.4"
   }
 }

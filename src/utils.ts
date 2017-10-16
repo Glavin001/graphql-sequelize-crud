@@ -3,12 +3,13 @@ import * as camelcase from 'camelcase';
 import * as pluralize from 'pluralize';
 import {
     GraphQLID,
+    GraphQLNonNull,
     GraphQLFieldConfigMap,
     GraphQLInputFieldConfigMap,
+    GraphQLInputField,
 } from 'graphql';
 import {
     fromGlobalId,
-    globalIdField,
 } from "graphql-relay";
 import {
     Model,
@@ -82,9 +83,9 @@ export function convertFieldsToGlobalId(
         if (attr.references) {
             // console.log(`Replacing ${getTableName(Model)}'s field ${k} with globalIdField.`);
             const modelName = attr.references.model;
-            fields[key] = globalIdField(modelName);
+            fields[key] = globalIdInputField(modelName);
         } else if (attr.primaryKey) {
-            fields[key] = globalIdField(getTableName(model));
+            fields[key] = globalIdInputField(getTableName(model));
             // Make primaryKey optional (allowNull=True)
             fields[key].type = GraphQLID;
         }
@@ -96,7 +97,7 @@ export function connectionNameForAssociation(model: Model, associationName: stri
 }
 
 export function attributesForModel(model: Model): RawAttributes {
-    return (<any> model).rawAttributes;
+    return (<any>model).rawAttributes;
 }
 
 export interface RawAttributes {
@@ -128,4 +129,12 @@ export function queryName(model: Model, type: string) {
 
 export function getTableName(model: Model): string {
     return (<any>model).name;
+}
+
+export function globalIdInputField(modelName: string): GraphQLInputField {
+    return {
+        name: 'id',
+        description: `The ID for ${modelName}`,
+        type: new GraphQLNonNull(GraphQLID),
+    };
 }
