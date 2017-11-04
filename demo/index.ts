@@ -46,8 +46,17 @@ const User = sequelize.define('User', {
 }, {
     timestamps: true,
     classMethods: {
-      queries: () => {
-        return {};
+      queries: (models: Models, types: ModelTypes) => {
+        return {
+          viewer: {
+            type: types.User,
+            description: "Get a User by username",
+            args: {},
+            resolve: (source: any, args: any, context: any) => {
+              return Promise.resolve(null);
+            },
+          },
+        };
       },
       mutations: (models: Models, modelTypes: ModelTypes) => {
         return {

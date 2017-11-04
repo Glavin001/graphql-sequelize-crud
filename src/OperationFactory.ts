@@ -4,7 +4,6 @@
 import {
     GraphQLObjectType,
     GraphQLInt,
-    GraphQLList,
     GraphQLInputObjectType,
     GraphQLID,
     GraphQLFieldConfigMap,
@@ -31,6 +30,8 @@ import {
     convertFieldsToGlobalId,
     queryName,
     globalIdInputField,
+    createNonNullList,
+    createNonNullListResolver,
 } from "./utils";
 import {
     Model,
@@ -190,9 +191,9 @@ export class OperationFactory {
         }) {
         const findAllQueryName = queryName(model, 'findAll');
         queries[findAllQueryName] = {
-            type: new GraphQLList(modelType),
+            type: createNonNullList(modelType),
             args: defaultListArgs(model),
-            resolve: resolver(model)
+            resolve: createNonNullListResolver(resolver(model)),
         };
     }
 
@@ -310,22 +311,24 @@ export class OperationFactory {
                 });
                 // console.log(`${getTableName(Model)} mutation output`, output);
                 const updateModelOutputTypeName = `Update${getTableName(model)}Output`;
-                const outputType = cache[updateModelOutputTypeName] || new GraphQLObjectType({
-                    name: updateModelOutputTypeName,
-                    fields: output
-                });
+                const outputType: GraphQLObjectType = (
+                    cache[updateModelOutputTypeName] as GraphQLObjectType
+                    || new GraphQLObjectType({
+                        name: updateModelOutputTypeName,
+                        fields: output
+                    }));
                 cache[updateModelOutputTypeName] = outputType;
 
                 return {
                     nodes: {
-                        type: new GraphQLList(outputType),
+                        type: createNonNullList(outputType),
                         // tslint:disable-next-line max-func-args
-                        resolve: (source: any, args: any, context: any, info: any) => {
+                        resolve: createNonNullListResolver((source: any, args: any, context: any, info: any) => {
                             // console.log('update', source, args);
                             return model.findAll({
                                 where: source.where
                             });
-                        }
+                        })
                     },
                     affectedCount: {
                         type: GraphQLInt

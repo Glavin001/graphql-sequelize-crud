@@ -171,12 +171,12 @@ describe('getSchema', () => {
     if (debug) {
       const { models } = sequelize;
       Promise.all(Object.keys(models)
-      .map((modelName) => models[modelName].findAll()))
-      // tslint:disable-next-line:no-console no-magic-numbers
-      .then(result => console.log(JSON.stringify(result, null, 2)))
-      .catch(error => console.error(error))
-      .then(cb)
-      ;
+        .map((modelName) => models[modelName].findAll()))
+        // tslint:disable-next-line:no-console no-magic-numbers
+        .then(result => console.log(JSON.stringify(result, null, 2)))
+        .catch(error => console.error(error))
+        .then(cb)
+        ;
     } else {
       cb();
     }
@@ -208,6 +208,69 @@ describe('getSchema', () => {
       'createTodoAssignee', 'updateTodoAssignee', 'updateTodoAssignees', 'deleteTodoAssignee', 'deleteTodoAssignees',
       'createCustom',
     ]);
+
+  });
+
+  it('should successfully query empty records', (cb) => {
+    const schema = getSchema(sequelize);
+    const queryUser = `query {
+      todos {
+        id
+        text
+        completed
+        user {
+          id
+          email
+        }
+      }
+      todoAssignees {
+        id
+        primary
+        UserId
+        TodoId
+      }
+      users {
+        id
+        email
+        todos {
+          total
+          edges {
+            node {
+              id
+              text
+              completed
+            }
+          }
+        }
+        assignedTodos {
+          total
+          edges {
+            id
+            primary
+            node {
+              id
+              text
+              completed
+            }
+          }
+        }
+      }
+    }`;
+    graphql(schema, queryUser)
+      .then(result => {
+        // console.log(JSON.stringify(result, undefined, 4));
+        expect(result).to.be.an('object');
+        expect(result.data).to.be.an('object');
+        if (!result.data) {
+          throw new Error("No data");
+        }
+        cb();
+      })
+      .catch((error) => {
+        console.error(error);
+        cb(error);
+      })
+      ;
 
   });
 
