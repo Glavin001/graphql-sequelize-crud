@@ -9,6 +9,7 @@ import {
     GraphQLFieldConfigMap,
     GraphQLFieldConfig,
     GraphQLInputFieldConfigMap,
+    GraphQLFieldResolver,
 } from 'graphql';
 import * as _ from 'lodash';
 import * as camelcase from 'camelcase';
@@ -172,11 +173,24 @@ export class OperationFactory {
             modelType: GraphQLObjectType;
         }) {
         const findByIdQueryName = queryName(model, 'findById');
+
+        const queryArgs = defaultArgs(model);
+        convertFieldsToGlobalId(model, queryArgs);
+
+        const baseResolve = resolver(model, {});
+        // tslint:disable-next-line:max-func-args
+        const resolve: GraphQLFieldResolver<any, any> = (source, args, context, info) => {
+            convertFieldsFromGlobalId(model, args);
+            if (args.where) {
+                convertFieldsFromGlobalId(model, args.where);
+            }
+            return baseResolve(source, args, context, info);
+        };
+
         queries[findByIdQueryName] = {
             type: modelType,
-            args: defaultArgs(model),
-            resolve: resolver(model, {
-            })
+            args: queryArgs,
+            resolve
         };
     }
 
@@ -190,10 +204,24 @@ export class OperationFactory {
             queries: Queries;
         }) {
         const findAllQueryName = queryName(model, 'findAll');
+        const queryArgs = defaultListArgs(model);
+
+        const baseResolve = createNonNullListResolver(resolver(model, { list: true }));
+        // tslint:disable-next-line:max-func-args
+        const resolve: GraphQLFieldResolver<any, any> = (source, args, context, info) => {
+            if (args.where) {
+                convertFieldsFromGlobalId(model, args.where);
+            }
+            if (args.include) {
+                convertFieldsFromGlobalId(model, args.include);
+            }
+            return baseResolve(source, args, context, info);
+        };
+
         queries[findAllQueryName] = {
             type: createNonNullList(modelType),
-            args: defaultListArgs(model),
-            resolve: createNonNullListResolver(resolver(model)),
+            args: queryArgs,
+            resolve,
         };
     }
 

@@ -84,6 +84,7 @@ declare module "graphql-sequelize-teselagen" {
         before?: Function;
         after?: Function;
         separate?: boolean;
+        list?: boolean;
     }): GraphQLFieldResolver<any, any>;
 
     function sequelizeNodeInterface(sequelize: Sequelize): {
